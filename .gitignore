@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# dependencies
+dependencies
+
+# JetBrains
+.idea
