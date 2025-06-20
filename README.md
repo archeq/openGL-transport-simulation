@@ -4,7 +4,7 @@ Simulation of the public transport service written in the C++ using openGL for t
 
 
 * fetch the project
-* either create a `dependencies` folder within the project and manually add all dependencies from the list below or replace this section to use system libraries
+* either create a `dependencies` folder within the project and manually add all dependencies from the list below or replace this section in the `CmakeLists.txt` to use system libraries
 * build the app using cmake
 
 # External dependencies
