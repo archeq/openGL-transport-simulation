@@ -8,24 +8,21 @@
 
 
 class App {
-
 public:
+    GLFWwindow *window = nullptr;
 
-    GLFWwindow* window = nullptr;
-
-    void run();  // initializes the app and starts its main loop
-    static void terminate();  // kills the app
-    void glfw_init();  // pretty much self-explanatory
+    void run(); // initializes the app and starts its main loop
+    static void terminate(); // kills the app
+    void glfw_init(); // pretty much self-explanatory
     void glad_init();
 
 private:
-
     bool is_glfw_initialized = false;
     bool is_glad_initialized = false;
 
-    GLFWwindow* window_init(int width, int height);
-    void loop();
+    GLFWwindow *window_init(int width, int height);
 
+    void loop();
 };
 
 #endif //APP_H

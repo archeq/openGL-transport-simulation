@@ -14,7 +14,6 @@
 
 
 void App::run() {
-
     // initialization
     glfw_init();
     window = window_init(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -22,18 +21,14 @@ void App::run() {
 
     // running the loop
     loop();
-
 }
 
 void App::terminate() {
-
     glfwTerminate();
     std::cout << "App was terminated" << std::endl;
-
 }
 
 void App::glfw_init() {
-
     if (is_glfw_initialized) return;
 
     glfwInit();
@@ -42,40 +37,29 @@ void App::glfw_init() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     is_glfw_initialized = true;
-
 }
 
 void App::glad_init() {
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         terminate();
         return;
     }
 
     is_glad_initialized = true;
-
 }
 
-GLFWwindow* App::window_init(int width, int height) {
-
-    GLFWwindow* window = glfwCreateWindow(width, height, WINDOW_TITLE, nullptr, nullptr);
+GLFWwindow *App::window_init(int width, int height) {
+    GLFWwindow *window = glfwCreateWindow(width, height, WINDOW_TITLE, nullptr, nullptr);
     if (!window) {
-
         std::cout << "Failed to create GLFW window" << std::endl;
         terminate();
-
     }
     glfwMakeContextCurrent(window);
     return window;
-
 }
 
 void App::loop() {
-
     while (!glfwWindowShouldClose(window)) {
-
     }
-
 }
