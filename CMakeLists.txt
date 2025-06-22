@@ -7,6 +7,7 @@ include_directories(src/app)
 
 # dependencies
 include_directories(include)
+include_directories(dependencies/assimp)
 include_directories(dependencies/GLFW/include)
 link_directories(dependencies/GLFW/lib)
 
