@@ -7,9 +7,10 @@ include_directories(src/app)
 
 # dependencies
 include_directories(include)
-include_directories(dependencies/assimp)
 include_directories(dependencies/GLFW/include)
 link_directories(dependencies/GLFW/lib)
+include_directories(dependencies/assimp/include)
+link_directories(dependencies/assimp/lib)
 
 # to be able to import glfw whenever we want
 add_definitions(-DGLFW_INCLUDE_NONE)
