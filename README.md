@@ -10,6 +10,7 @@ Simulation of the public transport service written in the C++ using openGL for t
 # External dependencies
 
 * [GLFW](https://www.glfw.org/download.html)
+* [assimp](https://github.com/assimp/assimp/blob/master/Build.md)
 
 # Authors
 * me
