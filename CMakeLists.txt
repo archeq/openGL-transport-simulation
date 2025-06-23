@@ -4,6 +4,8 @@ project(openGL_transport_simulation)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(src/app)
+include_directories(src/model)
+include_directories(src/view)
 
 # dependencies
 include_directories(include)
