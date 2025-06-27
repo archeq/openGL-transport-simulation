@@ -3,7 +3,13 @@
 //
 
 #include "Mesh.h"
+
+#include <iostream>
+#include <ostream>
 #include <glad/glad.h>
+#include <string>
+
+using std::string;
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
     this->vertices = vertices;
@@ -43,7 +49,37 @@ void Mesh::setupMesh() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::draw(Shader &shader) {
-    // TODO: implement mesh drawing
+void Mesh::draw(const Shader &shader) const {
+    unsigned int diffuseNr = 1, specularNr = 1;
+
+    for(unsigned int i=0; i < textures.size(); i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
+
+        // retrieve texture number (the N in diffuse_textureN)
+        const Texture texture = textures[i];
+        string type_name;
+        switch(texture.type) {
+            case TextureType::DIFFUSE:
+                type_name = "texture_diffuse";
+                break;
+            case TextureType::SPECULAR:
+                type_name = "spectacular";
+                break;
+            default:
+                std::cout << "Texture type not supported" << std::endl;
+                return;
+        }
+        string uniform_texture_name = "texture_" + type_name + std::to_string(specularNr++);
+
+        shader.setFloat(uniform_texture_name.c_str(), i);  // I'm really unsure about it
+        glBindTexture(GL_TEXTURE_2D, texture.id);
+    }
+    glActiveTexture(GL_TEXTURE0);
+
+    // draw mesh
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
+
 }
 
