@@ -12,7 +12,7 @@
 class Shader {
 public:
 
-    unsigned int id = NULL;
+    Shader() {};  // default constructor for declarations
     Shader(const char *vertexPath, const char *fragmentPath);
     void use() const;
 
@@ -21,6 +21,8 @@ public:
     void setInt(const std::string &name, const int value) const;
     void setFloat(const std::string &name, const float value) const;
 
+private:
+    unsigned int id = NULL;
 };
 
 
