@@ -4,7 +4,9 @@
 
 #ifndef SHADER_H
 #define SHADER_H
+
 #include <stddef.h>
+#include <string>
 
 
 class Shader {
@@ -15,9 +17,9 @@ public:
     void use() const;
 
     // uniform management
-    void setBool(const char *name, bool value);
-    void setInt(const char *name, int value);
-    void setFloat(const char *name, float value);
+    void setBool(const std::string &name, const bool value) const;
+    void setInt(const std::string &name, const int value) const;
+    void setFloat(const std::string &name, const float value) const;
 
 };
 
