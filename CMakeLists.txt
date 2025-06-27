@@ -20,7 +20,13 @@ add_definitions(-DGLFW_INCLUDE_NONE)
 # executable
 add_executable(app
         src/app/app.cpp
-        src/app/app.h
+        src/view/Shader.cpp
+        src/view/Texture.cpp
+        src/view/Camera.cpp
+        src/view/Renderer.cpp
+        src/model/Mesh.cpp
+        src/model/Model.cpp
+        src/model/Scene.cpp
         src/glad/glad.c
         src/main.cpp)
 
