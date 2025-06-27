@@ -12,7 +12,7 @@ public:
 
     unsigned int id = NULL;
     Shader(const char *vertexPath, const char *fragmentPath);
-    void use();
+    void use() const;
 
     // uniform management
     void setBool(const char *name, bool value);

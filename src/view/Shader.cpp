@@ -75,7 +75,7 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
     glAttachShader(id, vertex);
     glAttachShader(id, fragment);
     glLinkProgram(id);
-    glDeleteShader(vertex);  // removing shader after they being linked
+    glDeleteShader(vertex);  // removing shader after they were linked
     glDeleteShader(fragment);
     glGetProgramiv(id, GL_LINK_STATUS, &success);
     if (!success) {
@@ -86,4 +86,8 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
         return;
     }
 
+}
+
+void Shader::use() const {
+    glUseProgram(id);
 }
