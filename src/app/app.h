@@ -6,6 +6,7 @@
 #define APP_H
 #include "GLFW/glfw3.h"
 
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 
 class App {
 public:
@@ -19,8 +20,11 @@ public:
 private:
     bool is_glfw_initialized = false;
     bool is_glad_initialized = false;
+    float deltaTime_s = 0.0f;
+    float lastFrame_s = 0.0f;
 
     GLFWwindow *window_init(int width, int height);
+    void process_input(GLFWwindow *window) const;
 
     void loop();
 };
