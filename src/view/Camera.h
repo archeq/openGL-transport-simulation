@@ -13,7 +13,9 @@ enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    UP,
+    DOWN
 };
 
 class Camera {
@@ -25,8 +27,8 @@ public:
     glm::vec3 WorldUp;
     float Yaw;
     float Pitch;
-    float MovementSpeed = 3.0f;
-    float MouseSensitivity = 0.1f;
+    float MovementSpeed = 5.0f;
+    float MouseSensitivity = 0.14f;
     float Zoom = 45.0f;
 
     // constructor with vectors
