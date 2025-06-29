@@ -21,6 +21,7 @@ enum TextureType {
 class Texture {
 public:
 
+    Texture() {};
     Texture(const std::string &path, int width, int height);
 
     unsigned int id = NULL;
