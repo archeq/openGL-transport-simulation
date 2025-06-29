@@ -9,6 +9,8 @@
 #include <sstream>
 
 #include "glad/glad.h"
+#include "glm/vec3.hpp"
+#include "glm/mat4x4.hpp"
 
 Shader::Shader(const char *vertexPath, const char *fragmentPath) {
 
@@ -110,5 +112,9 @@ void Shader::setVec2(const std::string &name, const glm::vec2 &value) const {
 
 void Shader::setVec3(const std::string &name, const glm::vec3 &value) const {
     glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
+}
+
+void Shader::setMat4(const std::string &name, const glm::mat4 &value) const {
+    glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &value[0][0]);
 }
 
