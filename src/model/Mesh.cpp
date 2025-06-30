@@ -71,7 +71,7 @@ void Mesh::draw(const Shader &shader) const {
         }
         string uniform_texture_name = "texture_" + type_name + std::to_string(specularNr++);
 
-        shader.setFloat(uniform_texture_name.c_str(), i);  // I'm really unsure about it
+        shader.setFloat(uniform_texture_name, i);  // I'm really unsure about it
         glBindTexture(GL_TEXTURE_2D, texture.id);
     }
     glActiveTexture(GL_TEXTURE0);
