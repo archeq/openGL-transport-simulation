@@ -55,7 +55,8 @@ void Mesh::draw(const Shader &shader) const {
     for(unsigned int i=0; i < textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
 
-        // retrieve texture number (the N in diffuse_textureN)
+        // retrieve texture number
+        // assuming that we have material.diffuseN and material.specularN in our shaders N >= 1
         const Texture texture = textures[i];
         string type_name;
         switch(texture.type) {
@@ -69,7 +70,7 @@ void Mesh::draw(const Shader &shader) const {
                 std::cout << "Texture type not supported" << std::endl;
                 return;
         }
-        string uniform_texture_name = "texture_" + type_name + std::to_string(specularNr++);
+        string uniform_texture_name = "material." + type_name + std::to_string(specularNr++);
 
         shader.setInt(uniform_texture_name, i);  // I'm really unsure about it
         glBindTexture(GL_TEXTURE_2D, texture.id);
