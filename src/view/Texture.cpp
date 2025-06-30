@@ -10,15 +10,25 @@
 #include <stb/stb_image.h>
 #include <glad/glad.h>
 
-Texture::Texture(const std::string &path, int width, int height) {
+Texture::Texture(const std::string &path) {
 
     // loading the image
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, nullptr, 3);
+    int width, height, channels;
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
     if (!data) {
         std::cout << "Failed to load the texture" << std::endl;
         return;
     }
+
+    // color format
+    GLenum format;
+    if (channels == 1)
+        format = GL_RED;
+    else if (channels == 3)
+        format = GL_RGB;
+    else if (channels == 4)
+        format = GL_RGBA;
 
     // generating new texture
     glGenTextures(1, &id);
@@ -31,7 +41,7 @@ Texture::Texture(const std::string &path, int width, int height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // binding the texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // freeing the memory

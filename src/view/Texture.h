@@ -22,7 +22,7 @@ class Texture {
 public:
 
     Texture() {};
-    Texture(const std::string &path, int width, int height);
+    Texture(const std::string &path);
 
     unsigned int id = NULL;
     TextureType type = TextureType::DIFFUSE;
