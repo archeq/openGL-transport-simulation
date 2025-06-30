@@ -12,10 +12,6 @@ enum TextureType {
     SPECULAR,
     NORMAL,
     HEIGHT,
-    METALNESS,
-    ROUGHNESS,
-    AMBIENT,
-    EMISSIVE,
 };
 
 class Texture {
