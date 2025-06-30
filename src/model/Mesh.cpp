@@ -38,10 +38,10 @@ void Mesh::setupMesh() {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
         // vertex normals
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, Normal)));
         // vertex texture coords
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, TexCoords)));
 
     // unbinding buffers
     glBindVertexArray(0);
@@ -71,7 +71,7 @@ void Mesh::draw(const Shader &shader) const {
         }
         string uniform_texture_name = "texture_" + type_name + std::to_string(specularNr++);
 
-        shader.setFloat(uniform_texture_name, i);  // I'm really unsure about it
+        shader.setInt(uniform_texture_name, i);  // I'm really unsure about it
         glBindTexture(GL_TEXTURE_2D, texture.id);
     }
     glActiveTexture(GL_TEXTURE0);
