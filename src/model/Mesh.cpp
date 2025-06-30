@@ -60,10 +60,10 @@ void Mesh::draw(const Shader &shader) const {
         string type_name;
         switch(texture.type) {
             case TextureType::DIFFUSE:
-                type_name = "texture_diffuse";
+                type_name = "diffuse";
                 break;
             case TextureType::SPECULAR:
-                type_name = "spectacular";
+                type_name = "specular";
                 break;
             default:
                 std::cout << "Texture type not supported" << std::endl;
