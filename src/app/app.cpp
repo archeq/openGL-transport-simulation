@@ -16,6 +16,7 @@
 #include "Camera.h"
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
+#include "glm/gtx/transform.hpp"
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 900
@@ -89,15 +90,17 @@ GLFWwindow *App::window_init(int width, int height) {
     return window;
 }
 
-Shader shader;
-unsigned int VBO, cubeVAO;
-Texture boxTexture;
+Shader shader, lightSourceShader;
+unsigned int VBO, cubeVAO, lightCubeVAO;
+Texture boxTexture, boxSpecularMap;
 Camera camera;
 
 void test_setup() {
     // Temporal function for TESTING only
-    shader = Shader("../shaders/simple_shader.vert", "../shaders/simple_shader.frag");
-    boxTexture = Texture(std::string("../textures/container.png"), 512, 512);
+    shader = Shader("../shaders/specular_map.vert", "../shaders/specular_map.frag");
+    lightSourceShader = Shader("../shaders/light_source.vert", "../shaders/light_source.frag");
+    boxTexture = Texture(std::string("../textures/container.png"));
+    boxSpecularMap = Texture(std::string("../textures/container2_specular.png"));
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
      float vertices[] = {
         // positions          // normals           // texture coords
@@ -144,6 +147,8 @@ void test_setup() {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
+
+    // test box
     glGenVertexArrays(1, &cubeVAO);
     glGenBuffers(1, &VBO);
 
@@ -163,6 +168,14 @@ void test_setup() {
     // texture attribute
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+
+    // light cube
+    glGenVertexArrays(1, &lightCubeVAO);
+    glBindVertexArray(lightCubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+
 
 }
 
@@ -210,9 +223,11 @@ void render(GLFWwindow *window) {
     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // ======================================
+    //              test box
+    // ======================================
     shader.use();
-
-    glm::vec3 light_pos(3.0, 2.0, 5.0f);
+    glm::vec3 light_pos(1.7, 2.0, 3.0f);
     shader.setVec3("light.position", light_pos);
     shader.setVec3("viewPos", camera.Position);
 
@@ -220,9 +235,10 @@ void render(GLFWwindow *window) {
     shader.setVec3("light.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
     shader.setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     shader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
     // material properties
-    shader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    shader.setFloat("material.shininess", 64.0f);
+    // shader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));  // for shader without specular mapping
+    shader.setFloat("material.shininess", 80.0f);
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), WINDOW_RATIO, 0.1f, 100.0f);
@@ -235,12 +251,34 @@ void render(GLFWwindow *window) {
     shader.setMat4("model", model);
 
     // bind diffuse map
+    shader.setInt("material.diffuse", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, boxTexture.id);
+
+    // bind specular map
+    shader.setInt("material.specular", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, boxSpecularMap.id);
 
     // render the cube
     glBindVertexArray(cubeVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    // ======================================
+    //              light cube
+    // ======================================
+    lightSourceShader.use();
+    lightSourceShader.setMat4("projection", projection);
+    lightSourceShader.setMat4("view", view);
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, light_pos);
+    model = glm::scale(model, glm::vec3(0.1f));
+    lightSourceShader.setMat4("model", model);
+
+    // render the cube
+    glBindVertexArray(lightCubeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
     glUseProgram(0);
 
