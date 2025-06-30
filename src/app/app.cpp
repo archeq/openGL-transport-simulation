@@ -219,7 +219,8 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
 }
 
 void render(GLFWwindow *window) {
-    // Temporal function for TESTING only
+    // 1) temporal function for TESTING only
+    // 2) there's nothing more permanent than a temporary solution
     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
