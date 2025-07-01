@@ -9,10 +9,8 @@ include_directories(src/view)
 
 # dependencies
 include_directories(include)
-include_directories(dependencies/GLFW/include)
-link_directories(dependencies/GLFW/lib)
-include_directories(dependencies/assimp/include)
-link_directories(dependencies/assimp/lib)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 # to be able to import glfw whenever we want
 add_definitions(-DGLFW_INCLUDE_NONE)
@@ -30,4 +28,4 @@ add_executable(app
         src/glad/glad.c
         src/main.cpp)
 
-target_link_libraries(app glfw3)
+target_link_libraries(app PRIVATE glfw assimp::assimp)
