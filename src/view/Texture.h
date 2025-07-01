@@ -18,10 +18,11 @@ class Texture {
 public:
 
     Texture() = default;
-    Texture(const std::string &path);
+    explicit Texture(const std::string &path);
 
     unsigned int id = NULL;
     TextureType type = TextureType::DIFFUSE;
+    std::string path;
 };
 
 #endif //TEXTURE_H

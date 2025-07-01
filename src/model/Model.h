@@ -23,7 +23,7 @@ public:
     void draw(const Shader &shader);
 
 private:
-    std::vector<Texture> textures_loaded;
+    std::vector<Texture> loaded_textures;
     std::vector<Mesh> meshes;
     std::string directory;
     std::string path;

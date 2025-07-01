@@ -139,9 +139,23 @@ std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *mat, const ai
         mat->GetTexture(assimp_type, i, &str);
         std::string path = directory + "/" + str.C_Str();
 
-        Texture texture(path);
-        texture.type = texture_type;
-        textures.push_back(texture);
+        // checking if the texture is already loaded
+        bool is_loaded = false;
+        for(auto & loaded_texture : loaded_textures) {
+            if(path == loaded_texture.path) {
+                textures.push_back(loaded_texture);
+                is_loaded = true;
+                break;
+            }
+        }
+
+        // loading if not
+        if (!is_loaded) {
+            Texture texture(path);
+            texture.type = texture_type;
+            textures.push_back(texture);
+            loaded_textures.push_back(texture);
+        }
 
     }
 
