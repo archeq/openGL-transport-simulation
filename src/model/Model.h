@@ -8,11 +8,12 @@
 #include <vector>
 #include <string>
 
-#include "Camera.h"
 #include "assimp/scene.h"
 #include "assimp/material.h"
 #include "assimp/mesh.h"
 
+#include "LightSource.h"
+#include "Camera.h"
 #include "Texture.h"
 #include "Mesh.h"
 
@@ -27,7 +28,7 @@ public:
 
     float material_shininess = 32.0f;
 
-    void draw(const Shader &shader, const Camera &camera) const;
+    void draw(const Shader &shader, const Camera &camera, const LightSource &lightSource) const;
 
 private:
     std::vector<Texture> loaded_textures;

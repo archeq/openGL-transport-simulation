@@ -14,6 +14,7 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "Camera.h"
+#include "LightSource.h"
 #include "Model.h"
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -140,6 +141,7 @@ unsigned int VBO, cubeVAO, lightCubeVAO;
 Texture boxTexture, boxSpecularMap;
 Camera camera;
 Model backpackModel;
+LightSource lightSource;
 
 void test_setup() {
     // Temporal function for TESTING only
@@ -150,34 +152,38 @@ void test_setup() {
     boxSpecularMap = Texture(std::string("../textures/container2_specular.png"));
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
     backpackModel = Model("../models/backpack/backpack.obj");
+    lightSource = LightSource(glm::vec3(1.7, 2.0, 3.0f),
+                        glm::vec3(0.3f, 0.3f, 0.3f),
+                         glm::vec3(0.5f, 0.5f, 0.5f),
+                        glm::vec3(1.0f, 1.0f, 1.0f));
 
-    // test box
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &VBO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_pnt), cube_vertices_pnt, GL_STATIC_DRAW);
-
-    glBindVertexArray(cubeVAO);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
-
-    // normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // texture attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    // light cube
-    glGenVertexArrays(1, &lightCubeVAO);
-    glBindVertexArray(lightCubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
+    // // test box
+    // glGenVertexArrays(1, &cubeVAO);
+    // glGenBuffers(1, &VBO);
+    //
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_pnt), cube_vertices_pnt, GL_STATIC_DRAW);
+    //
+    // glBindVertexArray(cubeVAO);
+    //
+    // // position attribute
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+    // glEnableVertexAttribArray(0);
+    //
+    // // normal attribute
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+    // glEnableVertexAttribArray(1);
+    //
+    // // texture attribute
+    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
+    // glEnableVertexAttribArray(2);
+    //
+    // // light cube
+    // glGenVertexArrays(1, &lightCubeVAO);
+    // glBindVertexArray(lightCubeVAO);
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+    // glEnableVertexAttribArray(0);
 
 
 }
@@ -227,7 +233,7 @@ void draw_test_box(const glm::vec3 &light_pos, const glm::mat4 &projection, cons
     // ======================================
     simpleShader.use();
     simpleShader.setVec3("light.position", light_pos);
-    simpleShader.setVec3("viewPos", camera.Position);
+    simpleShader.setVec3("viewPos", camera.position);
 
     // light properties
     simpleShader.setVec3("light.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
@@ -259,50 +265,19 @@ void draw_test_box(const glm::vec3 &light_pos, const glm::mat4 &projection, cons
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
-void draw_light_cube(const glm::vec3 &light_pos,const glm::mat4 &projection,const glm::mat4 &view) {
-    // ======================================
-    //              light cube
-    // ======================================
-    lightSourceShader.use();
-    lightSourceShader.setMat4("projection", projection);
-    lightSourceShader.setMat4("view", view);
-    auto model = glm::mat4(1.0f);
-    model = glm::translate(model, light_pos);
-    model = glm::scale(model, glm::vec3(0.1f));
-    lightSourceShader.setMat4("model", model);
-
-    // render the cube
-    glBindVertexArray(lightCubeVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-}
-
 void render(GLFWwindow *window) {
     // 1) temporal function for TESTING only
     // 2) there's nothing more permanent than a temporary solution
     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto light_pos = glm::vec3(1.7, 2.0, 3.0f);
-    auto projection = camera.getProjectionMatrix();
-    auto view = camera.GetViewMatrix();
-
-    // test box
-    // draw_test_box(light_pos, projection, view);
+    // light
+    lightSource.draw_as_cube(camera, 0.2);
 
     // test model
-    modelShader.use();
-    modelShader.setVec3("lightPos", light_pos);
-    modelShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-    modelShader.setVec3("light.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    modelShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-
-    backpackModel.draw(modelShader, camera);
-
-    // light cube
-    draw_light_cube(light_pos, projection, view);
+    backpackModel.draw(modelShader, camera, lightSource);
 
     glUseProgram(0);
-
     glfwSwapBuffers(window);
 }
 

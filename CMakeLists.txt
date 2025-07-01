@@ -26,6 +26,7 @@ add_executable(app
         src/model/Model.cpp
         src/model/Scene.cpp
         src/glad/glad.c
-        src/main.cpp)
+        src/main.cpp
+        src/view/LightSource.cpp)
 
 target_link_libraries(app PRIVATE glfw assimp::assimp)

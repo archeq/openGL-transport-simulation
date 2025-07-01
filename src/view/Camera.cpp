@@ -8,7 +8,7 @@
 #include "glm/ext/matrix_clip_space.hpp"
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float ratio) {
-    Position = position;
+    position = position;
     WorldUp = up;
     Yaw = yaw;
     Pitch = pitch;
@@ -17,7 +17,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float r
 }
 
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, float ratio) {
-    Position = glm::vec3(posX, posY, posZ);
+    position = glm::vec3(posX, posY, posZ);
     WorldUp = glm::vec3(upX, upY, upZ);
     Yaw = yaw;
     Pitch = pitch;
@@ -25,24 +25,24 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
     updateCameraVectors();
 }
 
-glm::mat4 Camera::GetViewMatrix() const {
-    return glm::lookAt(Position, Position + Front, Up);
+glm::mat4 Camera::getViewMatrix() const {
+    return glm::lookAt(position, position + Front, Up);
 }
 
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime) {
     float velocity = MovementSpeed * deltaTime;
     if (direction == FORWARD)
-        Position += Front * velocity;
+        position += Front * velocity;
     if (direction == BACKWARD)
-        Position -= Front * velocity;
+        position -= Front * velocity;
     if (direction == LEFT)
-        Position -= Right * velocity;
+        position -= Right * velocity;
     if (direction == RIGHT)
-        Position += Right * velocity;
+        position += Right * velocity;
     if (direction == UP)
-        Position += Up * velocity;
+        position += Up * velocity;
     if (direction == DOWN)
-        Position -= Up * velocity;
+        position -= Up * velocity;
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch) {

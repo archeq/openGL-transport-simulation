@@ -20,7 +20,7 @@ enum Camera_Movement {
 
 class Camera {
 public:
-    glm::vec3 Position;
+    glm::vec3 position;
     glm::vec3 Front = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 Up;
     glm::vec3 Right;
@@ -44,7 +44,7 @@ public:
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, float ratio = 16.0/9.0);
 
 
-    [[nodiscard]] glm::mat4 GetViewMatrix() const; // returns the view matrix calculated using Euler Angles and the LookAt Matrix
+    [[nodiscard]] glm::mat4 getViewMatrix() const; // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     void ProcessKeyboard(Camera_Movement direction, float deltaTime);
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
     void ProcessMouseScroll(float yoffset);

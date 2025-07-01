@@ -12,6 +12,7 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 #define GLM_ENABLE_EXPERIMENTAL
+#include "LightSource.h"
 #include "glm/trigonometric.hpp"
 #include "glm/gtx/transform.hpp"
 
@@ -34,14 +35,20 @@ Model::Model(const char *path) {
     processNode(scene->mRootNode, scene);
 }
 
-void Model::draw(const Shader &shader, const Camera &camera) const {
+void Model::draw(const Shader &shader, const Camera &camera, const LightSource &lightSource) const {
+    shader.use();
 
     // uniforms
     shader.setMat4("model", getModelMatrix());
-    shader.setMat4("view", camera.GetViewMatrix());
+    shader.setMat4("view", camera.getViewMatrix());
     shader.setMat4("projection", camera.getProjectionMatrix());
-    shader.setVec3("viewPos", camera.Position);
+    shader.setVec3("viewPos", camera.position);
     shader.setFloat("material.shininess", material_shininess);
+    shader.setVec3("lightPos", lightSource.position);
+    shader.setVec3("light.diffuse", lightSource.diffuse);
+    shader.setVec3("light.ambient", lightSource.ambient);
+    shader.setVec3("light.specular", lightSource.specular);
+
 
     // merely drawing all meshes the model consists of
     for (auto &mesh : meshes) {

@@ -14,7 +14,7 @@
 class Shader {
 public:
 
-    Shader() {};  // default constructor for declarations
+    Shader() = default;  // default constructor for declarations
     Shader(const char *vertexPath, const char *fragmentPath);
     void use() const;
 
