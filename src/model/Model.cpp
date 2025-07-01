@@ -16,7 +16,7 @@ Model::Model(const char *path) {
 
     // reading the file
     Assimp::Importer importer;
-    auto flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs;
+    auto flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
     const aiScene* scene = importer.ReadFile(path, flags);
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
@@ -85,17 +85,17 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.TexCoords = vec;
 
-            // // tangent
-            // vector.x = mesh->mTangents[i].x;
-            // vector.y = mesh->mTangents[i].y;
-            // vector.z = mesh->mTangents[i].z;
-            // vertex.Tangent = vector;
+            // tangent
+            vector.x = mesh->mTangents[i].x;
+            vector.y = mesh->mTangents[i].y;
+            vector.z = mesh->mTangents[i].z;
+            vertex.Tangent = vector;
 
-            // // bitangent
-            // vector.x = mesh->mBitangents[i].x;
-            // vector.y = mesh->mBitangents[i].y;
-            // vector.z = mesh->mBitangents[i].z;
-            // vertex.Bitangent = vector;
+            // bitangent
+            vector.x = mesh->mBitangents[i].x;
+            vector.y = mesh->mBitangents[i].y;
+            vector.z = mesh->mBitangents[i].z;
+            vertex.Bitangent = vector;
         }
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
@@ -121,12 +121,12 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     // 2. specular maps
     std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::SPECULAR);
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // // 3. normal maps // TODO: use normal maps
-    // std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, TextureType::Normal);
-    // textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // // 4. height maps
-    // std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, TextureType::Height);
-    // textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    // 3. normal maps
+    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, TextureType::NORMAL);
+    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+    // 4. height maps
+    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, TextureType::HEIGHT);
+    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data
     return {vertices, indices, textures};

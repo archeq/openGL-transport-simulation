@@ -42,6 +42,12 @@ void Mesh::setupMesh() {
         // vertex texture coords
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, TexCoords)));
+        // vertex tangent
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, Tangent)));
+        // vertex bitangent
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, Bitangent)));
 
     // unbinding buffers
     glBindVertexArray(0);
@@ -50,7 +56,7 @@ void Mesh::setupMesh() {
 }
 
 void Mesh::draw(const Shader &shader) const {
-    unsigned int diffuseNr = 1, specularNr = 1;
+    unsigned int diffuseNr = 1, specularNr = 1, normalNr = 1, heightNr = 1;
 
     for(unsigned int i=0; i < textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
@@ -62,16 +68,20 @@ void Mesh::draw(const Shader &shader) const {
         string uniform_texture_name;
         switch(texture.type) {
             case TextureType::DIFFUSE:
-                type_name = "diffuse";
-                uniform_texture_name = "material." + type_name + std::to_string(diffuseNr++);
+                uniform_texture_name = "material.diffuse" + std::to_string(diffuseNr++);
                 break;
             case TextureType::SPECULAR:
-                type_name = "specular";
-                uniform_texture_name = "material." + type_name + std::to_string(specularNr++);
+                uniform_texture_name = "material.specular" + std::to_string(specularNr++);
+                break;
+            case TextureType::NORMAL:
+                uniform_texture_name = "material.normal" + std::to_string(normalNr++);
+                break;
+            case TextureType::HEIGHT:
+                uniform_texture_name = "material.height" + std::to_string(heightNr++);
                 break;
             default:
                 std::cout << "Texture type not supported" << std::endl;
-                return;
+                continue;
         }
 
         shader.setInt(uniform_texture_name, i);  // I'm really unsure about it
@@ -81,7 +91,7 @@ void Mesh::draw(const Shader &shader) const {
 
     // draw mesh
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 
 }

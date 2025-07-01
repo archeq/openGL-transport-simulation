@@ -298,12 +298,12 @@ void render(GLFWwindow *window) {
     modelShader.setMat4("model", model);
     modelShader.setMat4("view", view);
     modelShader.setMat4("projection", projection);
-    modelShader.setVec3("light.position", light_pos);
-    modelShader.setVec3("light.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
-    modelShader.setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+    modelShader.setVec3("lightPos", light_pos);
+    modelShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+    modelShader.setVec3("light.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
     modelShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
     modelShader.setVec3("viewPos", camera.Position);
-    modelShader.setFloat("material.shininess", 55.0f);
+    modelShader.setFloat("material.shininess", 25.0f);
 
 
     backpackModel.draw(modelShader);
