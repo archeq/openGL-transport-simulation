@@ -5,16 +5,33 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include <glad/glad.h>
+#include <vector>
+#include <string>
 
-namespace model {
+#include "assimp/scene.h"
+#include "assimp/material.h"
+#include "assimp/mesh.h"
+
+#include "Texture.h"
+#include "Mesh.h"
 
 class Model {
 public:
+    Model() = default;
+    Model(const char *path);
 
+    void draw(const Shader &shader);
+
+private:
+    std::vector<Texture> textures_loaded;
+    std::vector<Mesh> meshes;
+    std::string directory;
+    std::string path;
+
+    void processNode(const aiNode *node, const aiScene *scene);
+    Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+    std::vector<Texture> loadMaterialTextures(const aiMaterial *mat, aiTextureType assimp_type, TextureType texture_type);
 
 };
-
-} // model
 
 #endif //OBJECT_H
