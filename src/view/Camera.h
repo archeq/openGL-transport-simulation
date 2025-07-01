@@ -30,20 +30,26 @@ public:
     float MovementSpeed = 5.0f;
     float MouseSensitivity = 0.14f;
     float Zoom = 45.0f;
+    float near_distance = 0.1f;
+    float far_distance = 100.0f;
+    float ratio;
 
     // constructor with vectors
     explicit Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
            glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
            float yaw = -90.0,
-           float pitch = 0.0);
+           float pitch = 0.0,
+           float ratio = 16.0/9.0);
     // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
+    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, float ratio = 16.0/9.0);
 
 
     [[nodiscard]] glm::mat4 GetViewMatrix() const; // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     void ProcessKeyboard(Camera_Movement direction, float deltaTime);
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
     void ProcessMouseScroll(float yoffset);
+
+    glm::mat4 getProjectionMatrix() const;
 
 private:
     void updateCameraVectors();  // calculates the front vector from the Camera's (updated) Euler Angles

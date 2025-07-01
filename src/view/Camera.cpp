@@ -5,20 +5,23 @@
 #include "Camera.h"
 
 #include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/matrix_clip_space.hpp"
 
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) {
+Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float ratio) {
     Position = position;
     WorldUp = up;
     Yaw = yaw;
     Pitch = pitch;
+    this->ratio = ratio;
     updateCameraVectors();
 }
 
-Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) {
+Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, float ratio) {
     Position = glm::vec3(posX, posY, posZ);
     WorldUp = glm::vec3(upX, upY, upZ);
     Yaw = yaw;
     Pitch = pitch;
+    this->ratio = ratio;
     updateCameraVectors();
 }
 
@@ -81,3 +84,8 @@ void Camera::updateCameraVectors() {
     Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     Up    = glm::normalize(glm::cross(Right, Front));
 }
+
+glm::mat4 Camera::getProjectionMatrix() const {
+    return glm::perspective(glm::radians(Zoom), ratio, near_distance, far_distance);
+}
+

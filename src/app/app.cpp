@@ -283,30 +283,20 @@ void render(GLFWwindow *window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto light_pos = glm::vec3(1.7, 2.0, 3.0f);
-    auto projection = glm::perspective(glm::radians(camera.Zoom), WINDOW_RATIO, 0.1f, 100.0f);
+    auto projection = camera.getProjectionMatrix();
     auto view = camera.GetViewMatrix();
 
     // test box
     // draw_test_box(light_pos, projection, view);
 
     // test model
-    // TODO: я это все скоро красиво организую в class Model
-    auto model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
     modelShader.use();
-    modelShader.setMat4("model", model);
-    modelShader.setMat4("view", view);
-    modelShader.setMat4("projection", projection);
     modelShader.setVec3("lightPos", light_pos);
     modelShader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
     modelShader.setVec3("light.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
     modelShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-    modelShader.setVec3("viewPos", camera.Position);
-    modelShader.setFloat("material.shininess", 25.0f);
 
-
-    backpackModel.draw(modelShader);
+    backpackModel.draw(modelShader, camera);
 
     // light cube
     draw_light_cube(light_pos, projection, view);

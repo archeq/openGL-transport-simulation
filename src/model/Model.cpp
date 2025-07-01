@@ -6,10 +6,14 @@
 
 #include <iostream>
 
+#include "Camera.h"
 #include "assimp/Importer.hpp"
 #include "assimp/mesh.h"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/trigonometric.hpp"
+#include "glm/gtx/transform.hpp"
 
 Model::Model(const char *path) {
     this->path = std::string(path);  // меня за это сожгут в аду :))))))) MAKAVELIGODD
@@ -30,7 +34,15 @@ Model::Model(const char *path) {
     processNode(scene->mRootNode, scene);
 }
 
-void Model::draw(const Shader &shader) {
+void Model::draw(const Shader &shader, const Camera &camera) const {
+
+    // uniforms
+    shader.setMat4("model", getModelMatrix());
+    shader.setMat4("view", camera.GetViewMatrix());
+    shader.setMat4("projection", camera.getProjectionMatrix());
+    shader.setVec3("viewPos", camera.Position);
+    shader.setFloat("material.shininess", material_shininess);
+
     // merely drawing all meshes the model consists of
     for (auto &mesh : meshes) {
         mesh.draw(shader);
@@ -160,4 +172,14 @@ std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *mat, const ai
     }
 
     return textures;
+}
+
+glm::mat4 Model::getModelMatrix() const {
+    auto model = glm::mat4(1.0f);
+    model = glm::translate(model, position);
+    model = glm::scale(model, scale);
+    model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    return model;
 }
