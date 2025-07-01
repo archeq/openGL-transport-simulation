@@ -16,6 +16,10 @@
 #include "Camera.h"
 #include "LightSource.h"
 #include "Model.h"
+#include "RailroadMap.h"
+
+
+
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/gtx/transform.hpp"
@@ -138,10 +142,39 @@ GLFWwindow *App::window_init(int width, int height) {
 
 Shader simpleShader, lightSourceShader, modelShader;
 unsigned int VBO, cubeVAO, lightCubeVAO;
-Texture boxTexture, boxSpecularMap;
+Texture boxTexture, boxSpecularMap, railTexture, stationTexture;
 Camera camera;
 Model backpackModel;
 LightSource lightSource;
+
+
+// TODO: обычная инициализация а не это
+RailroadMap* railroadMap = nullptr;
+
+std::vector<std::vector<glm::vec3>> routes = {
+    // маршрут 1
+    {
+        glm::vec3(-5.0f, 0.0f, 0.0f),
+        glm::vec3(-3.0f, 0.0f, 2.0f),
+        glm::vec3(0.0f, 0.0f, -3.0f),
+        glm::vec3(3.0f, 0.0f, 2.0f),
+        glm::vec3(5.0f, 0.0f, 0.0f),
+        glm::vec3(9.0f, 0.0f, 0.0f),
+    },
+    // маршрут 2
+    {
+        glm::vec3(-4.0f, 0.0f, -2.0f),
+        glm::vec3(-2.0f, 0.0f, -3.0f),
+        glm::vec3(0.0f, 0.0f, 4.0f),
+        glm::vec3(2.0f, 0.0f, -3.0f),
+        glm::vec3(4.0f, 0.0f, -2.0f),
+        glm::vec3(6.0f, 0.0f, 2.0f),
+    }
+};
+
+bool isRailroadMapInitialized = false;
+
+
 
 void test_setup() {
     // Temporal function for TESTING only
@@ -157,27 +190,36 @@ void test_setup() {
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
 
-    // // test box
-    // glGenVertexArrays(1, &cubeVAO);
-    // glGenBuffers(1, &VBO);
-    //
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_pnt), cube_vertices_pnt, GL_STATIC_DRAW);
-    //
-    // glBindVertexArray(cubeVAO);
-    //
-    // // position attribute
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
-    // glEnableVertexAttribArray(0);
-    //
-    // // normal attribute
-    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-    //
-    // // texture attribute
-    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
-    // glEnableVertexAttribArray(2);
-    //
+
+
+
+
+
+    isRailroadMapInitialized = true;
+    // test box
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &VBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_pnt), cube_vertices_pnt, GL_STATIC_DRAW);
+
+    glBindVertexArray(cubeVAO);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+
+    // normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // texture attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+
+    railroadMap = new RailroadMap(routes);
+    railroadMap->loadTextures("../textures/rail.png", "../textures/station.png");
     // // light cube
     // glGenVertexArrays(1, &lightCubeVAO);
     // glBindVertexArray(lightCubeVAO);
@@ -275,7 +317,42 @@ void render(GLFWwindow *window) {
     lightSource.draw_as_cube(camera, 0.2);
 
     // test model
-    backpackModel.draw(modelShader, camera, lightSource);
+    // backpackModel.draw(modelShader, camera, lightSource);
+
+
+
+
+    if (isRailroadMapInitialized) {
+
+        simpleShader.use();
+
+        simpleShader.setMat4("projection", camera.getProjectionMatrix());
+        simpleShader.setMat4("view", camera.getViewMatrix());
+        simpleShader.setMat4("model", glm::mat4(1.0f));
+
+        // uniform-переменные для освещения
+        simpleShader.setVec3("light.position", lightSource.position);
+        simpleShader.setVec3("viewPos", camera.position);
+        simpleShader.setVec3("light.ambient", lightSource.ambient);
+        simpleShader.setVec3("light.diffuse", lightSource.diffuse);
+        simpleShader.setVec3("light.specular", lightSource.specular);
+
+        // material properties
+        simpleShader.setFloat("material.shininess", 32.0f);
+
+        // Установка текстурного слота
+        simpleShader.setInt("material.diffuse", 0);
+
+
+        // Отрисовка рельсов и станций
+        railroadMap->draw_rails();
+        railroadMap->draw_stations();
+
+        // Отрисовка коробок на станциях
+        railroadMap->draw_station_boxes(simpleShader, cubeVAO, boxTexture.id, boxSpecularMap.id);
+    }
+
+
 
     glUseProgram(0);
     glfwSwapBuffers(window);
