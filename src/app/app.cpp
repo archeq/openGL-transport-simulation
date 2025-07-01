@@ -315,6 +315,10 @@ void App::loop() {
         deltaTime_s = currentFrame - lastFrame_s;
         lastFrame_s = currentFrame;
 
+        backpackModel.position.x -= deltaTime_s * 0.5f;
+        backpackModel.rotation_deg.y += deltaTime_s * 45.f;
+        backpackModel.scale = glm::vec3(0.25*glm::sin(3*currentFrame) + 0.75);
+
         // input
         process_input(window);
 

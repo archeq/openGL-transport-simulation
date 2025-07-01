@@ -22,7 +22,7 @@ public:
     Model(const char *path);
 
     glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 rotation_deg = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
 
     float material_shininess = 32.0f;
