@@ -59,18 +59,20 @@ void Mesh::draw(const Shader &shader) const {
         // assuming that we have material.diffuseN and material.specularN in our shaders N >= 1
         const Texture texture = textures[i];
         string type_name;
+        string uniform_texture_name;
         switch(texture.type) {
             case TextureType::DIFFUSE:
                 type_name = "diffuse";
+                uniform_texture_name = "material." + type_name + std::to_string(diffuseNr++);
                 break;
             case TextureType::SPECULAR:
                 type_name = "specular";
+                uniform_texture_name = "material." + type_name + std::to_string(specularNr++);
                 break;
             default:
                 std::cout << "Texture type not supported" << std::endl;
                 return;
         }
-        string uniform_texture_name = "material." + type_name + std::to_string(specularNr++);
 
         shader.setInt(uniform_texture_name, i);  // I'm really unsure about it
         glBindTexture(GL_TEXTURE_2D, texture.id);
