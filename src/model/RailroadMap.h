@@ -58,9 +58,7 @@ inline float cube_vertices_pnt[] = {
 
 
 
-
 class BezierCurve {
-private:
     glm::vec3 p0, p1, p2;  // Изменено на vec3
 
 public:
