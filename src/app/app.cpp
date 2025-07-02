@@ -36,45 +36,45 @@ float mouse_last_y;
 bool firstMouse = true;
 
 // cube
-float cube_vertices_pnt[] = {
-       // positions          // normals           // texture coords
-       -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-       -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-       -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-       -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-       -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-       -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-       -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-       -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-       -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-       -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-       -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-       -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-       -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-       -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-       -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-       -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-       -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-       -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-    };
+// float cube_vertices_pnt[] = {
+//        // positions          // normals           // texture coords
+//        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+//         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+//         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+//         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+//        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+//        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+//        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+//         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+//         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+//         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+//        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+//        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+//        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+//        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+//        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+//        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+//        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+//        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+//         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+//         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+//         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+//         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+//         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+//         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+//        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+//         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+//         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+//         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+//        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+//        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+//        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+//         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+//         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+//         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+//        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+//        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+//     };
 
 void App::run() {
     // glfw initialization
@@ -148,24 +148,25 @@ Model backpackModel;
 LightSource lightSource;
 
 
-// TODO: обычная инициализация а не это
-RailroadMap* railroadMap = nullptr;
+// Объявляем глобальную переменную railroadMap и routes
+RailroadMap railroadMap;
 
 std::vector<std::vector<glm::vec3>> routes = {
-    // маршрут 1
+    // Первый маршрут - сплайн проходящий через все станции
     {
         glm::vec3(-5.0f, 0.0f, 0.0f),
         glm::vec3(-3.0f, 0.0f, 2.0f),
-        glm::vec3(0.0f, 0.0f, -3.0f),
+        glm::vec3(0.0f, 0.0f, 1.0f),
+        glm::vec3(1.0f, 0.0f, 4.0f),
         glm::vec3(3.0f, 0.0f, 2.0f),
         glm::vec3(5.0f, 0.0f, 0.0f),
         glm::vec3(9.0f, 0.0f, 0.0f),
     },
-    // маршрут 2
+    // // Второй маршрут - другой сплайн
     {
         glm::vec3(-4.0f, 0.0f, -2.0f),
         glm::vec3(-2.0f, 0.0f, -3.0f),
-        glm::vec3(0.0f, 0.0f, 4.0f),
+        glm::vec3(0.0f, 0.0f, -1.0f),
         glm::vec3(2.0f, 0.0f, -3.0f),
         glm::vec3(4.0f, 0.0f, -2.0f),
         glm::vec3(6.0f, 0.0f, 2.0f),
@@ -195,7 +196,15 @@ void test_setup() {
 
 
 
-    isRailroadMapInitialized = true;
+    // В функции инициализации или setup
+    if (!isRailroadMapInitialized) {
+        railroadMap.initialize(routes);
+        railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
+        railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
+        isRailroadMapInitialized = true;
+    }
+
+
     // test box
     glGenVertexArrays(1, &cubeVAO);
     glGenBuffers(1, &VBO);
@@ -218,8 +227,6 @@ void test_setup() {
     glEnableVertexAttribArray(2);
 
 
-    railroadMap = new RailroadMap(routes);
-    railroadMap->loadTextures("../textures/rail.png", "../textures/station.png");
     // // light cube
     // glGenVertexArrays(1, &lightCubeVAO);
     // glBindVertexArray(lightCubeVAO);
@@ -320,17 +327,21 @@ void render(GLFWwindow *window) {
     // backpackModel.draw(modelShader, camera, lightSource);
 
 
-
-
+    // Отрисовка железной дороги, если объект инициализирован
     if (isRailroadMapInitialized) {
-
+        // Используем простой шейдер для отрисовки железной дороги
         simpleShader.use();
+        // simpleShader.setInt("useTextures", 0);
+        // simpleShader.setVec3("objectColor", glm::vec3(1.0f, 0.0f, 0.0f));
+        // simpleShader.setInt("useTextures", 1);
+
+
 
         simpleShader.setMat4("projection", camera.getProjectionMatrix());
         simpleShader.setMat4("view", camera.getViewMatrix());
         simpleShader.setMat4("model", glm::mat4(1.0f));
 
-        // uniform-переменные для освещения
+        // Установка uniform-переменных для освещения
         simpleShader.setVec3("light.position", lightSource.position);
         simpleShader.setVec3("viewPos", camera.position);
         simpleShader.setVec3("light.ambient", lightSource.ambient);
@@ -345,11 +356,11 @@ void render(GLFWwindow *window) {
 
 
         // Отрисовка рельсов и станций
-        railroadMap->draw_rails();
-        railroadMap->draw_stations();
+        railroadMap.draw_rails(simpleShader);
+        railroadMap.draw_stations(simpleShader);
+        railroadMap.draw_station_boxes(simpleShader);
 
-        // Отрисовка коробок на станциях
-        railroadMap->draw_station_boxes(simpleShader, cubeVAO, boxTexture.id, boxSpecularMap.id);
+
     }
 
 

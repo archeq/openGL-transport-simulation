@@ -9,9 +9,55 @@
 #include <glm/glm.hpp>
 #include "Texture.h"
 #include <memory>
+#include "Mesh.h"
 #include "Shader.h" // Добавьте включение заголовочного файла Shader
 
 // Структура для хранения кривой Безье третьего порядка
+
+
+inline float cube_vertices_pnt[] = {
+        // positions          // normals           // texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+        // ... и так далее для остальных 5 граней куба
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+    };
+
+
+
 
 class BezierCurve {
 private:
@@ -112,25 +158,43 @@ private:
     std::vector<CatmullRomSpline> routes;
 
 
-    unsigned int railVAO, stationVAO;
-    int railVerticesCount, stationVerticesCount;
+    // Заменяем VAO на Mesh
+    std::unique_ptr<Mesh> railMesh;
+    std::unique_ptr<Mesh> stationMesh;
+    std::unique_ptr<Mesh> stationBoxMesh;
+
+    int railVerticesCount{}, stationVerticesCount{};
 
     unsigned int railTextureID = 0, stationTextureID = 0;
 
+    // Текстуры для коробок станций
+    unsigned int boxDiffuseTextureID = 0, boxSpecularTextureID = 0;
+    bool boxTexturesLoaded = false;
+
     void createRailsMesh();
     void createStationsMesh();
+    void createStationBoxMesh();
 
 public:
-    // TODO: proverit' 4e za gavno
-    //explicit RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints, const std::vector<glm::vec3>& stationPoints);
+
+
+
+    RailroadMap() = default;
     RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints);
     std::vector<glm::vec3> stations;
-    void draw_station_boxes(const Shader& shader, unsigned int cubeVAO, unsigned int diffuseTextureID, unsigned int specularTextureID);
+
+    void initialize(const std::vector<std::vector<glm::vec3>>& routePoints);
+
+    // Обновляем сигнатуру функции - теперь без дополнительных параметров
+    void draw_station_boxes(const Shader& shader);
+
     ~RailroadMap();
 
     bool loadTextures(const std::string& railTexturePath, const std::string& stationTexturePath);
-    void draw_rails();
-    void draw_stations();
+    bool loadStationBoxTextures(const std::string& diffuseTexturePath, const std::string& specularTexturePath);
+
+    void draw_rails(const Shader& shader);
+    void draw_stations(const Shader& shader);
 
     unsigned int getRailTextureID() const { return railTextureID; }
     unsigned int getStationTextureID() const { return stationTextureID; }

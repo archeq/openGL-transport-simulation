@@ -7,6 +7,12 @@
 #include <iostream>
 #include <glm/gtx/vector_angle.hpp>
 
+
+
+
+
+
+
 RailroadMap::RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints) {
     for (const auto& route : routePoints) {
         // Проверяем, достаточно ли точек для сплайна
@@ -25,30 +31,40 @@ RailroadMap::RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints)
     createStationsMesh();
 }
 
-RailroadMap::~RailroadMap() {
-    glDeleteVertexArrays(1, &railVAO);
-    glDeleteVertexArrays(1, &stationVAO);
+void RailroadMap::initialize(const std::vector<std::vector<glm::vec3>>& routePoints) {
+    routes.clear();
+    stations.clear();
+
+    for (const auto& route : routePoints) {
+        // Проверяем, достаточно ли точек для сплайна
+        if (route.size() >= 2) {
+            // Создаем сплайн для маршрута
+            routes.emplace_back(route);
+
+            // Сохраняем станции
+            for (const auto& point : route) {
+                stations.push_back(point);
+            }
+        }
+    }
+
+    createRailsMesh();
+    createStationsMesh();
 }
+
+
+
+
+RailroadMap::~RailroadMap() = default;
 
 bool RailroadMap::loadTextures(const std::string& railTexturePath, const std::string& stationTexturePath) {
     try {
         Texture railTex(railTexturePath);
         Texture stationTex(stationTexturePath);
-
         railTextureID = railTex.id;
         stationTextureID = stationTex.id;
         std::cout << "Rail texture ID: " << railTextureID << std::endl;
         std::cout << "Station texture ID: " << stationTextureID << std::endl;
-        if (railTextureID == 0) {
-            std::cout << "Failed to load rail texture: " << railTexturePath << std::endl;
-            return false;
-        }
-
-        if (stationTextureID == 0) {
-            std::cout << "Failed to load station texture: " << stationTexturePath << std::endl;
-            return false;
-        }
-
         return true;
     } catch (const std::exception& e) {
         std::cout << "Exception during texture loading: " << e.what() << std::endl;
@@ -58,7 +74,8 @@ bool RailroadMap::loadTextures(const std::string& railTexturePath, const std::st
 }
 
 void RailroadMap::createRailsMesh() {
-    std::vector<float> vertices;
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
     const float railWidth = 0.2f;
 
     // Для каждого маршрута
@@ -110,212 +127,254 @@ void RailroadMap::createRailsMesh() {
                 // Нормаль направлена вверх для всех вершин рельса
                 glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
 
-                // Добавляем два треугольника для квада
-                // Треугольник 1
-                vertices.push_back(left.x);
-                vertices.push_back(left.y);
-                vertices.push_back(left.z);
-                vertices.push_back(normal.x);
-                vertices.push_back(normal.y);
-                vertices.push_back(normal.z);
-                vertices.push_back(t * 5.0f);
-                vertices.push_back(0.0f);
+                // Добавляем вершины
+                Vertex v1, v2, v3, v4;
 
-                vertices.push_back(right_pos.x);
-                vertices.push_back(right_pos.y);
-                vertices.push_back(right_pos.z);
-                vertices.push_back(normal.x);
-                vertices.push_back(normal.y);
-                vertices.push_back(normal.z);
-                vertices.push_back(t * 5.0f);
-                vertices.push_back(1.0f);
+                // Первый треугольник
+                v1.Position = left;
+                v1.Normal = normal;
+                v1.TexCoords = glm::vec2(t * 5.0f, 0.0f);
 
-                vertices.push_back(nextLeft.x);
-                vertices.push_back(nextLeft.y);
-                vertices.push_back(nextLeft.z);
-                vertices.push_back(normal.x);
-                vertices.push_back(normal.y);
-                vertices.push_back(normal.z);
-                vertices.push_back(nextT * 5.0f);
-                vertices.push_back(0.0f);
+                v2.Position = right_pos;
+                v2.Normal = normal;
+                v2.TexCoords = glm::vec2(t * 5.0f, 1.0f);
 
-                // Треугольник 2
-                vertices.push_back(right_pos.x);
-                vertices.push_back(right_pos.y);
-                vertices.push_back(right_pos.z);
-                vertices.push_back(normal.x);
-                vertices.push_back(normal.y);
-                vertices.push_back(normal.z);
-                vertices.push_back(t * 5.0f);
-                vertices.push_back(1.0f);
+                v3.Position = nextLeft;
+                v3.Normal = normal;
+                v3.TexCoords = glm::vec2(nextT * 5.0f, 0.0f);
 
-                vertices.push_back(nextRightPos.x);
-                vertices.push_back(nextRightPos.y);
-                vertices.push_back(nextRightPos.z);
-                vertices.push_back(normal.x);
-                vertices.push_back(normal.y);
-                vertices.push_back(normal.z);
-                vertices.push_back(nextT * 5.0f);
-                vertices.push_back(1.0f);
+                // Второй треугольник
+                v4.Position = nextRightPos;
+                v4.Normal = normal;
+                v4.TexCoords = glm::vec2(nextT * 5.0f, 1.0f);
 
-                vertices.push_back(nextLeft.x);
-                vertices.push_back(nextLeft.y);
-                vertices.push_back(nextLeft.z);
-                vertices.push_back(normal.x);
-                vertices.push_back(normal.y);
-                vertices.push_back(normal.z);
-                vertices.push_back(nextT * 5.0f);
-                vertices.push_back(0.0f);
+                // Добавляем вершины
+                unsigned int indexOffset = vertices.size();
+
+                vertices.push_back(v1);
+                vertices.push_back(v2);
+                vertices.push_back(v3);
+                vertices.push_back(v2);
+                vertices.push_back(v4);
+                vertices.push_back(v3);
+
+                // Добавляем индексы
+                indices.push_back(indexOffset);
+                indices.push_back(indexOffset + 1);
+                indices.push_back(indexOffset + 2);
+                indices.push_back(indexOffset + 3);
+                indices.push_back(indexOffset + 4);
+                indices.push_back(indexOffset + 5);
             }
         }
     }
 
-    railVerticesCount = vertices.size() / 8; // Изменено с 5 на 8 из-за добавления нормалей
+    // Создаем текстуру для рельсов
+    std::vector<Texture> textures;
+    Texture railTexture;
 
-    // OpenGL буферы
-    unsigned int VBO;
-    glGenVertexArrays(1, &railVAO);
-    glGenBuffers(1, &VBO);
+    // Создаем меш из вершин, индексов и текстур
+    railMesh = std::make_unique<Mesh>(vertices, indices, textures);
+    railVerticesCount = vertices.size();
 
-    glBindVertexArray(railVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-    // Позиция
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Нормаль
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // Текстурные координаты
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    std::cout << "Rail vertices count: " << railVerticesCount << ", VAO: " << railVAO << std::endl;
-
-    glBindVertexArray(0);
 }
 
-
-
-void RailroadMap::draw_station_boxes(const Shader& shader, unsigned int cubeVAO, unsigned int diffuseTextureID, unsigned int specularTextureID) {
-    // Настраиваем шейдер
-    shader.use();
-
-    // Привязываем текстуры
-    shader.setInt("material.diffuse", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, diffuseTextureID);
-
-    shader.setInt("material.specular", 1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, specularTextureID);
-
-    // Отрисовываем куб для каждой станции
-    for (const auto& station : stations) {
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, station);
-        model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f)); // Размер коробки
-
-        shader.setMat4("model", model);
-
-        // Отрисовка куба (используем существующий VAO из app.cpp)
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-}
 
 
 void RailroadMap::createStationsMesh() {
-    std::vector<float> vertices;
-
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
     const float stationSize = 0.2f;
 
     for (const auto& station : stations) {
-        // Верхний левый
-        vertices.push_back(station.x - stationSize);
-        vertices.push_back(station.y);
-        vertices.push_back(station.z - stationSize);
-        vertices.push_back(0.0f); // u-текстурная координата
-        vertices.push_back(1.0f); // v-текстурная координата
+        // Вершины квадрата для станции
+        Vertex topLeft, bottomLeft, bottomRight, topRight;
 
-        // Нижний левый
-        vertices.push_back(station.x - stationSize);
-        vertices.push_back(station.y);
-        vertices.push_back(station.z + stationSize);
-        vertices.push_back(0.0f); // u-текстурная координата
-        vertices.push_back(0.0f); // v-текстурная координата
+        // Верхний левый угол
+        topLeft.Position = glm::vec3(station.x - stationSize, station.y + 0.01f, station.z - stationSize);
+        topLeft.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        topLeft.TexCoords = glm::vec2(0.0f, 1.0f);
 
-        // Нижний правый
-        vertices.push_back(station.x + stationSize);
-        vertices.push_back(station.y);
-        vertices.push_back(station.z + stationSize);
-        vertices.push_back(1.0f); // u-текстурная координата
-        vertices.push_back(0.0f); // v-текстурная координата
+        // Нижний левый угол
+        bottomLeft.Position = glm::vec3(station.x - stationSize, station.y + 0.01f, station.z + stationSize);
+        bottomLeft.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        bottomLeft.TexCoords = glm::vec2(0.0f, 0.0f);
 
-        // Верхний левый
-        vertices.push_back(station.x - stationSize);
-        vertices.push_back(station.y);
-        vertices.push_back(station.z - stationSize);
-        vertices.push_back(0.0f); // u-текстурная координата
-        vertices.push_back(1.0f); // v-текстурная координата
+        // Нижний правый угол
+        bottomRight.Position = glm::vec3(station.x + stationSize, station.y + 0.01f, station.z + stationSize);
+        bottomRight.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        bottomRight.TexCoords = glm::vec2(1.0f, 0.0f);
 
-        // Нижний правый
-        vertices.push_back(station.x + stationSize);
-        vertices.push_back(station.y);
-        vertices.push_back(station.z + stationSize);
-        vertices.push_back(1.0f); // u-текстурная координата
-        vertices.push_back(0.0f); // v-текстурная координата
+        // Верхний правый угол
+        topRight.Position = glm::vec3(station.x + stationSize, station.y + 0.01f, station.z - stationSize);
+        topRight.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        topRight.TexCoords = glm::vec2(1.0f, 1.0f);
 
-        // Верхний правый
-        vertices.push_back(station.x + stationSize);
-        vertices.push_back(station.y);
-        vertices.push_back(station.z - stationSize);
-        vertices.push_back(1.0f); // u-текстурная координата
-        vertices.push_back(1.0f); // v-текстурная координата
+        // Индексы для добавляемых вершин
+        unsigned int indexOffset = vertices.size();
+
+        // Добавляем вершины
+        vertices.push_back(topLeft);
+        vertices.push_back(bottomLeft);
+        vertices.push_back(bottomRight);
+        vertices.push_back(topRight);
+
+        // Добавляем индексы для двух треугольников (квад)
+        // Первый треугольник
+        indices.push_back(indexOffset);
+        indices.push_back(indexOffset + 1);
+        indices.push_back(indexOffset + 2);
+
+        // Второй треугольник
+        indices.push_back(indexOffset);
+        indices.push_back(indexOffset + 2);
+        indices.push_back(indexOffset + 3);
     }
 
-    stationVerticesCount = vertices.size() / 5;
+    // Создаем текстуру для станций
+    std::vector<Texture> textures;
+    Texture stationTexture;
+    stationTexture.id = stationTextureID;
+    stationTexture.type = TextureType::DIFFUSE;
+    textures.push_back(stationTexture);
 
-    unsigned int VBO;
-    glGenVertexArrays(1, &stationVAO);
-    glGenBuffers(1, &VBO);
+    // Создаем меш для станций
+    stationMesh = std::make_unique<Mesh>(vertices, indices, textures);
+    stationVerticesCount = vertices.size();
 
-    glBindVertexArray(stationVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-    // Позиция
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Текстурные координаты
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0);
+    std::cout << "Station vertices count: " << stationVerticesCount << std::endl;
 }
 
-void RailroadMap::draw_rails() {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, railTextureID);
 
-    glBindVertexArray(railVAO);
-    glDrawArrays(GL_TRIANGLES, 0, railVerticesCount);
-    glBindVertexArray(0);
+
+
+
+void RailroadMap::createStationBoxMesh() {
+    // Используем вершины куба из массива с 36 вершинами (как в app.cpp)
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    // Создаем вершины куба
+
+
+    // Преобразуем массив в вектор вершин
+    for (int i = 0; i < 36; i++) {
+        Vertex vertex;
+        vertex.Position = glm::vec3(
+            cube_vertices_pnt[i * 8],
+            cube_vertices_pnt[i * 8 + 1],
+            cube_vertices_pnt[i * 8 + 2]
+        );
+        vertex.Normal = glm::vec3(
+            cube_vertices_pnt[i * 8 + 3],
+            cube_vertices_pnt[i * 8 + 4],
+            cube_vertices_pnt[i * 8 + 5]
+        );
+        vertex.TexCoords = glm::vec2(
+            cube_vertices_pnt[i * 8 + 6],
+            cube_vertices_pnt[i * 8 + 7]
+        );
+        vertices.push_back(vertex);
+        indices.push_back(i);
+    }
+
+    // Создаем текстуры для коробок станций
+    std::vector<Texture> textures;
+
+    // Диффузная текстура
+    Texture diffuseTexture;
+    diffuseTexture.id = boxDiffuseTextureID;
+    diffuseTexture.type = TextureType::DIFFUSE;
+    textures.push_back(diffuseTexture);
+
+    // Спекулярная текстура
+    Texture specularTexture;
+    specularTexture.id = boxSpecularTextureID;
+    specularTexture.type = TextureType::SPECULAR;
+    textures.push_back(specularTexture);
+
+    // Создаем меш
+    stationBoxMesh = std::make_unique<Mesh>(vertices, indices, textures);
 }
 
-void RailroadMap::draw_stations() {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, stationTextureID);
 
-    glBindVertexArray(stationVAO);
-    glDrawArrays(GL_TRIANGLES, 0, stationVerticesCount);
-    glBindVertexArray(0);
+
+void RailroadMap::draw_rails(const Shader& shader) {
+    // Если railMesh существует, рисуем его
+    if (railMesh) {
+        // Активируем текстуру рельсов
+        shader.setInt("material.diffuse", 0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, railTextureID);
+
+        // Отрисовываем меш, используя переданный шейдер
+        railMesh->draw(shader);
+    } else {
+        std::cout << "Rail mesh is not initialized!" << std::endl;
+    }
 }
 
+void RailroadMap::draw_stations(const Shader& shader) {
+    if (stationMesh) {
+        // Активируем текстуру станций
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, stationTextureID);
+
+        // Отрисовываем меш, используя переданный шейдер
+        stationMesh->draw(shader);
+    } else {
+        std::cout << "Station mesh is not initialized!" << std::endl;
+    }
+}
+
+
+
+void RailroadMap::draw_station_boxes(const Shader& shader) {
+    if (!stationBoxMesh) {
+        // Создаем меш для коробок станций, если он еще не создан
+        if (!boxTexturesLoaded) {
+            std::cout << "Station box textures are not loaded!" << std::endl;
+            return;
+        }
+        createStationBoxMesh();
+    }
+
+    if (stationBoxMesh) {
+        // Для каждой станции устанавливаем модельную матрицу и рисуем куб
+        for (const auto& station : stations) {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, station);
+            model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));
+            model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
+
+            shader.setMat4("model", model);
+            stationBoxMesh->draw(shader);
+        }
+    } else {
+        std::cout << "Station box mesh is not initialized!" << std::endl;
+    }
+}
+
+
+
+bool RailroadMap::loadStationBoxTextures(const std::string& diffuseTexturePath, const std::string& specularTexturePath) {
+
+    if (boxTexturesLoaded) {
+        return true; // Текстуры уже загружены, ничего не делаем
+    }
+
+    try {
+        Texture diffuseTex(diffuseTexturePath);
+        Texture specularTex(specularTexturePath);
+        boxDiffuseTextureID = diffuseTex.id;
+        boxSpecularTextureID = specularTex.id;
+        std::cout << "Box diffuse texture ID: " << boxDiffuseTextureID << std::endl;
+        std::cout << "Box specular texture ID: " << boxSpecularTextureID << std::endl;
+        boxTexturesLoaded = true; // Устанавливаем флаг в true после успешной загрузки
+        return true;
+    } catch (const std::exception& e) {
+        std::cout << "Exception during box texture loading: " << e.what() << std::endl;
+        return false;
+    }
+}
