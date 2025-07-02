@@ -17,7 +17,7 @@ Texture::Texture(const std::string &path) {
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
     if (!data) {
-        std::cout << "Failed to load the texture" << std::endl;
+        std::cout << "ERROR::TEXTURE:: Failed to load the texture " << path << std::endl;
         return;
     }
 
@@ -41,6 +41,7 @@ Texture::Texture(const std::string &path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // binding the texture
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 

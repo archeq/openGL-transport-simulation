@@ -140,7 +140,7 @@ Shader simpleShader, lightSourceShader, modelShader;
 unsigned int VBO, cubeVAO, lightCubeVAO;
 Texture boxTexture, boxSpecularMap;
 Camera camera;
-Model backpackModel;
+Model trainModel;
 LightSource lightSource;
 
 void test_setup() {
@@ -151,11 +151,15 @@ void test_setup() {
     boxTexture = Texture(std::string("../textures/container.png"));
     boxSpecularMap = Texture(std::string("../textures/container2_specular.png"));
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
-    backpackModel = Model("../models/backpack/backpack.obj");
-    lightSource = LightSource(glm::vec3(1.7, 2.0, 3.0f),
-                        glm::vec3(0.3f, 0.3f, 0.3f),
+    lightSource = LightSource(glm::vec3(0.0f, 10.0f, 0.0f),
+                        glm::vec3(0.5f, 0.5f, 0.5f),
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
+
+    trainModel = Model("../models/train/Intercity 125 Executive Livery With Buffers.obj");
+    if (!trainModel.is_loaded()) {
+        std::cout << "ERROR:: Train model failed to load!" << std::endl;
+    }
 
     // // test box
     // glGenVertexArrays(1, &cubeVAO);
@@ -272,10 +276,10 @@ void render(GLFWwindow *window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // light
-    lightSource.draw_as_cube(camera, 0.2);
+    lightSource.draw_as_cube(camera, 0.5);
 
     // test model
-    backpackModel.draw(modelShader, camera, lightSource);
+    trainModel.draw(modelShader, camera, lightSource);
 
     glUseProgram(0);
     glfwSwapBuffers(window);
@@ -289,10 +293,6 @@ void App::loop() {
         const auto currentFrame = static_cast<float>(glfwGetTime());
         deltaTime_s = currentFrame - lastFrame_s;
         lastFrame_s = currentFrame;
-
-        backpackModel.position.x -= deltaTime_s * 0.5f;
-        backpackModel.rotation_deg.y += deltaTime_s * 45.f;
-        backpackModel.scale = glm::vec3(0.25*glm::sin(3*currentFrame) + 0.75);
 
         // input
         process_input(window);

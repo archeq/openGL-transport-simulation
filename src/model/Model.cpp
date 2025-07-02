@@ -1,3 +1,4 @@
+
 //
 // Created by KUCIA on 22.06.2025.
 //
@@ -15,6 +16,8 @@
 #include "LightSource.h"
 #include "glm/trigonometric.hpp"
 #include "glm/gtx/transform.hpp"
+#include <glad/glad.h>
+
 
 Model::Model(const char *path) {
     this->path = std::string(path);  // меня за это сожгут в аду :))))))) MAKAVELIGODD
@@ -25,6 +28,7 @@ Model::Model(const char *path) {
     const aiScene* scene = importer.ReadFile(path, flags);
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+        _is_loaded = false;
         return;
     }
 
@@ -33,9 +37,11 @@ Model::Model(const char *path) {
 
     // process ASSIMP's root node recursively
     processNode(scene->mRootNode, scene);
+    _is_loaded = true;
 }
 
 void Model::draw(const Shader &shader, const Camera &camera, const LightSource &lightSource) const {
+    if (!is_loaded() || meshes.empty()) return;
     shader.use();
 
     // uniforms
@@ -49,7 +55,6 @@ void Model::draw(const Shader &shader, const Camera &camera, const LightSource &
     shader.setVec3("light.ambient", lightSource.ambient);
     shader.setVec3("light.specular", lightSource.specular);
 
-
     // merely drawing all meshes the model consists of
     for (auto &mesh : meshes) {
         mesh.draw(shader);
@@ -57,7 +62,7 @@ void Model::draw(const Shader &shader, const Camera &camera, const LightSource &
 }
 
 void Model::processNode(const aiNode *node, const aiScene *scene) {
-    // process all the node’s meshes (if any)
+    // process all the node's meshes (if any)
     for(unsigned int i = 0; i < node->mNumMeshes; i++) {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         meshes.push_back(processMesh(mesh, scene));
@@ -66,7 +71,6 @@ void Model::processNode(const aiNode *node, const aiScene *scene) {
     // then do the same for each of its children
     for(unsigned int i = 0; i < node->mNumChildren; i++)
         processNode(node->mChildren[i], scene);
-
 }
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
@@ -134,6 +138,26 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     // process materials
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
+    // Store material properties
+    MaterialProperties matProps;
+
+    // Get material colors
+    aiColor3D color;
+    if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+        matProps.diffuseColor = glm::vec3(color.r, color.g, color.b);
+    }
+    if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) {
+        matProps.specularColor = glm::vec3(color.r, color.g, color.b);
+    }
+    if (material->Get(AI_MATKEY_COLOR_AMBIENT, color) == AI_SUCCESS) {
+        matProps.ambientColor = glm::vec3(color.r, color.g, color.b);
+    }
+
+    float shininess;
+    if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) {
+        matProps.shininess = shininess;
+    }
+
     // 1. diffuse maps
     std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::DIFFUSE);
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
@@ -147,12 +171,26 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, TextureType::HEIGHT);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
+    // If no textures are found, create a default white texture for compatibility
+    if (textures.empty()) {
+        // Create default white texture if none exists
+        if (defaultWhiteTexture.id == 0) {
+            createDefaultTexture();
+        }
+
+        Texture defaultTex = defaultWhiteTexture;
+        defaultTex.type = TextureType::DIFFUSE;
+        textures.push_back(defaultTex);
+    }
+
     // return a mesh object created from the extracted mesh data
-    return {vertices, indices, textures};
+    return {vertices, indices, textures, matProps};
 }
 
 std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *mat, const aiTextureType assimp_type, const TextureType texture_type) {
     std::vector<Texture> textures;
+    // std::cout << "Loading " << mat->GetTextureCount(assimp_type) << " textures of type " << (int)assimp_type << std::endl;
+
     for (int i = 0; i < mat->GetTextureCount(assimp_type); i++) {
         aiString str;
         mat->GetTexture(assimp_type, i, &str);
@@ -170,12 +208,19 @@ std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *mat, const ai
 
         // loading if not
         if (!is_loaded) {
-            Texture texture(path);
-            texture.type = texture_type;
-            textures.push_back(texture);
-            loaded_textures.push_back(texture);
+            try {
+                // std::cout << "Creating new texture: " << path << std::endl;
+                Texture texture(path);
+                texture.type = texture_type;
+                textures.push_back(texture);
+                loaded_textures.push_back(texture);
+                // std::cout << "Successfully loaded texture: " << path << std::endl;
+            } catch (const std::exception& e) {
+                std::cout << "Failed to load texture: " << path << " - " << e.what() << std::endl;
+            } catch (...) {
+                std::cout << "Failed to load texture: " << path << " - Unknown error" << std::endl;
+            }
         }
-
     }
 
     return textures;
@@ -189,4 +234,25 @@ glm::mat4 Model::getModelMatrix() const {
     model = glm::rotate(model, glm::radians(rotation_deg.x), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, scale);
     return model;
+}
+
+void Model::createDefaultTexture() {
+    glGenTextures(1, &defaultWhiteTexture.id);
+    glBindTexture(GL_TEXTURE_2D, defaultWhiteTexture.id);
+
+    // Create 1x1 white pixel
+    unsigned char white[] = {255, 255, 255, 255};
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    defaultWhiteTexture.type = TextureType::DIFFUSE;
+    defaultWhiteTexture.path = "default_white";
+}
+
+bool Model::is_loaded() const {
+    return _is_loaded;
 }

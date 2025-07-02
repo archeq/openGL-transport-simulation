@@ -20,7 +20,7 @@
 class Model {
 public:
     Model() = default;
-    Model(const char *path);
+    explicit Model(const char *path);
 
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation_deg = glm::vec3(0.0f);
@@ -29,18 +29,21 @@ public:
     float material_shininess = 32.0f;
 
     void draw(const Shader &shader, const Camera &camera, const LightSource &lightSource) const;
+    [[nodiscard]] bool is_loaded() const;
 
 private:
     std::vector<Texture> loaded_textures;
     std::vector<Mesh> meshes;
     std::string directory;
     std::string path;
-
-    glm::mat4 getModelMatrix() const;
+    bool _is_loaded = false;
+    Texture defaultWhiteTexture;
 
     void processNode(const aiNode *node, const aiScene *scene);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene);
     std::vector<Texture> loadMaterialTextures(const aiMaterial *mat, aiTextureType assimp_type, TextureType texture_type);
+    [[nodiscard]] glm::mat4 getModelMatrix() const;
+    void createDefaultTexture();
 
 };
 
