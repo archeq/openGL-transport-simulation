@@ -31,20 +31,69 @@ RailroadMap::RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints)
     createStationsMesh();
 }
 
-void RailroadMap::initialize(const std::vector<std::vector<glm::vec3>>& routePoints) {
+
+void RailroadMap::setPoints(const std::vector<glm::vec3>& points) {
+    allPoints = points;
+}
+
+
+
+
+void RailroadMap::addRoute(const std::vector<int>& pointIndices) {
+    // Проверяем валидность индексов
+    for (int index : pointIndices) {
+        if (index < 0 || index >= allPoints.size()) {
+            std::cout << "Invalid point index: " << index << std::endl;
+            return;
+        }
+    }
+
+    routeIndices.push_back(pointIndices);
+
+    // Создаем сплайн из точек по индексам
+    std::vector<glm::vec3> routePoints;
+    for (int index : pointIndices) {
+        routePoints.push_back(allPoints[index]);
+    }
+
+    if (routePoints.size() >= 2) {
+        routes.emplace_back(routePoints);
+    }
+}
+
+
+
+
+void RailroadMap::initialize(const std::vector<glm::vec3>& points, const std::vector<std::vector<int>>& routeIndexArrays) {
     routes.clear();
     stations.clear();
+    routeIndices.clear();
 
-    for (const auto& route : routePoints) {
-        // Проверяем, достаточно ли точек для сплайна
-        if (route.size() >= 2) {
-            // Создаем сплайн для маршрута
-            routes.emplace_back(route);
+    setPoints(points);
 
-            // Сохраняем станции
-            for (const auto& point : route) {
-                stations.push_back(point);
-            }
+
+    // Old code
+
+    // for (const auto& route : routePoints) {
+    //     // Проверяем, достаточно ли точек для сплайна
+    //     if (route.size() >= 2) {
+    //         // Создаем сплайн для маршрута
+    //         routes.emplace_back(route);
+    //
+    //         // Сохраняем станции
+    //         for (const auto& point : route) {
+    //             stations.push_back(point);
+    //         }
+    //     }
+    // }
+
+
+    for (const auto& routeIdx : routeIndexArrays) {
+        addRoute(routeIdx);
+
+        // Добавляем станции из этого маршрута
+        for (int index : routeIdx) {
+            stations.push_back(allPoints[index]);
         }
     }
 

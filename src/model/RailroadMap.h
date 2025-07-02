@@ -155,10 +155,18 @@ public:
 
 class RailroadMap {
 private:
+
+
+
+    std::vector<glm::vec3> allPoints; // Все точки
+    std::vector<std::vector<int>> routeIndices; // Маршруты как индексы точек
     std::vector<CatmullRomSpline> routes;
+
+
     std::unique_ptr<Mesh> railMesh;
     std::unique_ptr<Mesh> stationMesh;
     std::unique_ptr<Mesh> stationBoxMesh;
+
 
     int railVerticesCount{}, stationVerticesCount{};
     unsigned int railTextureID = 0, stationTextureID = 0;
@@ -177,7 +185,16 @@ public:
     RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints);
     std::vector<glm::vec3> stations;
 
-    void initialize(const std::vector<std::vector<glm::vec3>>& routePoints);
+
+
+    void setPoints(const std::vector<glm::vec3>& points);
+    void addRoute(const std::vector<int>& pointIndices);
+    void initialize(const std::vector<glm::vec3>& points, const std::vector<std::vector<int>>& routes);
+
+
+    const glm::vec3& getPoint(int index) const { return allPoints[index]; }
+    size_t getPointsCount() const { return allPoints.size(); }
+
 
     // Обновляем сигнатуру функции - теперь без дополнительных параметров
     void draw_station_boxes(const Shader& shader);

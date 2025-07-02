@@ -107,27 +107,36 @@ LightSource lightSource;
 // Объявляем глобальную переменную railroadMap и routes
 RailroadMap railroadMap;
 
-std::vector<std::vector<glm::vec3>> routes = {
-    // Первый маршрут - сплайн проходящий через все станции
-    {
-        glm::vec3(-5.0f, 0.0f, 0.0f),
-        glm::vec3(-3.0f, 0.0f, 2.0f),
-        glm::vec3(0.0f, 0.0f, 1.0f),
-        glm::vec3(1.0f, 0.0f, 4.0f),
-        glm::vec3(3.0f, 0.0f, 2.0f),
-        glm::vec3(5.0f, 0.0f, 0.0f),
-        glm::vec3(9.0f, 0.0f, 0.0f),
-    },
-    // // Второй маршрут - другой сплайн
-    {
-        glm::vec3(-4.0f, 0.0f, -2.0f),
-        glm::vec3(-2.0f, 0.0f, -3.0f),
-        glm::vec3(0.0f, 0.0f, -1.0f),
-        glm::vec3(2.0f, 0.0f, -3.0f),
-        glm::vec3(4.0f, 0.0f, -2.0f),
-        glm::vec3(6.0f, 0.0f, 2.0f),
-    }
+std::vector<glm::vec3> allPoints = {
+    // Индексы 0-6: точки первого маршрута
+    glm::vec3(-60.0f, 0.0f, 51.0f),   // A (0)
+    glm::vec3(-30.0f, 0.0f, 45.0f),   // B (1)
+    glm::vec3(-5.0f, 0.0f, 30.0f),    // C (2)
+    glm::vec3(35.0f, 0.0f, -10.0f),    // D (3)
+    glm::vec3(110.0f, 0.0f, -15.0f),    // E (4)
+    glm::vec3(150.0f, 0.0f, 40.0f),    // F (5)
+
+
+
+    glm::vec3(-115.0f, 0.0f, -45.0f),    // G (6)
+    glm::vec3(-70.0f, 0.0f, -55.0f),  // H (7)
+    glm::vec3(-20.0f, 0.0f, -25.0f),  // I (8)
+    glm::vec3(75.0f, 0.0f, 45.0f),   // J (9)
+    glm::vec3(130.0f, 0.0f, 75.0f),   // K (10)
+    glm::vec3(60.0f, 0.0f, 125.0f),   // L (11)
+    glm::vec3(30.0f, 0.0f, 85.0f),    // M (12)
+    glm::vec3(-15.0f, 0.0f, -105.0f),    // N (13)
+    glm::vec3(-60.0f, 0.0f, -160.0f),    // O (14)
 };
+
+// Определяем маршруты по индексам
+std::vector<std::vector<int>> routeIndices = {
+    {0, 1, 2, 3, 4, 5},      // route 1
+    {6, 7, 8, 3, 9, 10,},    // route 2
+    {11, 12, 2, 8, 13, 14,},    // route 3
+};
+
+
 
 void test_setup() {
     // Temporal function for TESTING only
@@ -142,14 +151,14 @@ void test_setup() {
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
 
-    trainModel = Model("../models/train/Intercity 125 Executive Livery With Buffers.obj");
+    // trainModel = Model("../models/train/Intercity 125 Executive Livery With Buffers.obj");
     if (!trainModel.is_loaded()) {
         std::cout << "ERROR:: Train model failed to load!" << std::endl;
     }
     trainModel.scale = glm::vec3(0.12);
     trainModel.rotation_deg = glm::vec3(0, 90, 0);
 
-    railroadMap.initialize(routes);
+    railroadMap.initialize(allPoints, routeIndices);
     railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
     railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
 
