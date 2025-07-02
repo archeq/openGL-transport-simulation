@@ -378,3 +378,26 @@ bool RailroadMap::loadStationBoxTextures(const std::string& diffuseTexturePath, 
         return false;
     }
 }
+
+void RailroadMap::draw(const Shader &shader, const Camera &camera, const LightSource &lightSource) {
+    shader.use();
+
+    shader.setMat4("projection", camera.getProjectionMatrix());
+    shader.setMat4("view", camera.getViewMatrix());
+    shader.setMat4("model", glm::mat4(1.0f));
+    // Установка uniform-переменных для освещения
+    shader.setVec3("light.position", lightSource.position);
+    shader.setVec3("viewPos", camera.position);
+    shader.setVec3("light.ambient", lightSource.ambient);
+    shader.setVec3("light.diffuse", lightSource.diffuse);
+    shader.setVec3("light.specular", lightSource.specular);
+    // material properties
+    shader.setFloat("material.shininess", 32.0f);
+    // Установка текстурного слота
+    shader.setInt("material.diffuse", 0);
+    // Отрисовка рельсов и станций
+    draw_rails(shader);
+    draw_stations(shader);
+    draw_station_boxes(shader);
+    
+}

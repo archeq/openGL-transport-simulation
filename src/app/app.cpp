@@ -104,7 +104,6 @@ Camera camera;
 Model trainModel;
 LightSource lightSource;
 
-
 // Объявляем глобальную переменную railroadMap и routes
 RailroadMap railroadMap;
 
@@ -130,10 +129,6 @@ std::vector<std::vector<glm::vec3>> routes = {
     }
 };
 
-bool isRailroadMapInitialized = false;
-
-
-
 void test_setup() {
     // Temporal function for TESTING only
     simpleShader = Shader("../shaders/specular_map.vert", "../shaders/specular_map.frag");
@@ -154,13 +149,9 @@ void test_setup() {
     trainModel.scale = glm::vec3(0.12);
     trainModel.rotation_deg = glm::vec3(0, 90, 0);
 
-    // В функции инициализации или setup
-    if (!isRailroadMapInitialized) {
-        railroadMap.initialize(routes);
-        railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
-        railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
-        isRailroadMapInitialized = true;
-    }
+    railroadMap.initialize(routes);
+    railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
+    railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
 
     // test box
     glGenVertexArrays(1, &cubeVAO);
@@ -182,14 +173,6 @@ void test_setup() {
     // texture attribute
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
-
-    // // light cube
-    // glGenVertexArrays(1, &lightCubeVAO);
-    // glBindVertexArray(lightCubeVAO);
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
-    // glEnableVertexAttribArray(0);
-
 
 }
 
@@ -282,41 +265,9 @@ void render(GLFWwindow *window) {
     // test model
     trainModel.draw(modelShader, camera, lightSource);
 
-    // Отрисовка железной дороги, если объект инициализирован
-    if (isRailroadMapInitialized) {
-        // Используем простой шейдер для отрисовки железной дороги
-        simpleShader.use();
-        // simpleShader.setInt("useTextures", 0);
-        // simpleShader.setVec3("objectColor", glm::vec3(1.0f, 0.0f, 0.0f));
-        // simpleShader.setInt("useTextures", 1);
+    // railroad
+    railroadMap.draw(simpleShader, camera, lightSource);
 
-
-
-        simpleShader.setMat4("projection", camera.getProjectionMatrix());
-        simpleShader.setMat4("view", camera.getViewMatrix());
-        simpleShader.setMat4("model", glm::mat4(1.0f));
-
-        // Установка uniform-переменных для освещения
-        simpleShader.setVec3("light.position", lightSource.position);
-        simpleShader.setVec3("viewPos", camera.position);
-        simpleShader.setVec3("light.ambient", lightSource.ambient);
-        simpleShader.setVec3("light.diffuse", lightSource.diffuse);
-        simpleShader.setVec3("light.specular", lightSource.specular);
-
-        // material properties
-        simpleShader.setFloat("material.shininess", 32.0f);
-
-        // Установка текстурного слота
-        simpleShader.setInt("material.diffuse", 0);
-
-
-        // Отрисовка рельсов и станций
-        railroadMap.draw_rails(simpleShader);
-        railroadMap.draw_stations(simpleShader);
-        railroadMap.draw_station_boxes(simpleShader);
-
-
-    }
 
     glUseProgram(0);
     glfwSwapBuffers(window);

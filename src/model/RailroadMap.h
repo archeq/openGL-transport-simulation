@@ -7,8 +7,10 @@
 
 #include <vector>
 #include <glm/glm.hpp>
-#include "Texture.h"
+#include "Camera.h"
 #include <memory>
+
+#include "LightSource.h"
 #include "Mesh.h"
 #include "Shader.h" // Добавьте включение заголовочного файла Shader
 
@@ -154,18 +156,12 @@ public:
 class RailroadMap {
 private:
     std::vector<CatmullRomSpline> routes;
-
-
-    // Заменяем VAO на Mesh
     std::unique_ptr<Mesh> railMesh;
     std::unique_ptr<Mesh> stationMesh;
     std::unique_ptr<Mesh> stationBoxMesh;
 
     int railVerticesCount{}, stationVerticesCount{};
-
     unsigned int railTextureID = 0, stationTextureID = 0;
-
-    // Текстуры для коробок станций
     unsigned int boxDiffuseTextureID = 0, boxSpecularTextureID = 0;
     bool boxTexturesLoaded = false;
 
@@ -173,10 +169,10 @@ private:
     void createStationsMesh();
     void createStationBoxMesh();
 
+    void draw_rails(const Shader& shader);
+    void draw_stations(const Shader& shader);
+
 public:
-
-
-
     RailroadMap() = default;
     RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints);
     std::vector<glm::vec3> stations;
@@ -191,10 +187,9 @@ public:
     bool loadTextures(const std::string& railTexturePath, const std::string& stationTexturePath);
     bool loadStationBoxTextures(const std::string& diffuseTexturePath, const std::string& specularTexturePath);
 
-    void draw_rails(const Shader& shader);
-    void draw_stations(const Shader& shader);
+    void draw(const Shader &shader, const Camera &camera, const LightSource &lightSource);
 
-    unsigned int getRailTextureID() const { return railTextureID; }
-    unsigned int getStationTextureID() const { return stationTextureID; }
+    [[nodiscard]] unsigned int getRailTextureID() const { return railTextureID; }
+    [[nodiscard]] unsigned int getStationTextureID() const { return stationTextureID; }
 };
 #endif // RAILROAD_MAP_H
