@@ -27,6 +27,7 @@
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
+#include "stations.h"
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 900
@@ -62,90 +63,40 @@ bool showMainMenu = true;
 bool citySelected = false;
 
 void initializeCities() {
-    // Город 1 - существующий Gavnar
-    std::vector<glm::vec3> gavnarPoints = {
-        glm::vec3(-60.0f, 0.0f, 51.0f),   // A (0)
-        glm::vec3(-30.0f, 0.0f, 45.0f),   // B (1)
-        glm::vec3(-5.0f, 0.0f, 30.0f),    // C (2)
-        glm::vec3(35.0f, 0.0f, -10.0f),   // D (3)
-        glm::vec3(110.0f, 0.0f, -15.0f),  // E (4)
-        glm::vec3(150.0f, 0.0f, 40.0f),   // F (5)
-        glm::vec3(-115.0f, 0.0f, -45.0f), // G (6)
-        glm::vec3(-70.0f, 0.0f, -55.0f),  // H (7)
-        glm::vec3(-20.0f, 0.0f, -25.0f),  // I (8)
-        glm::vec3(75.0f, 0.0f, 45.0f),    // J (9)
-        glm::vec3(130.0f, 0.0f, 75.0f),   // K (10)
-        glm::vec3(60.0f, 0.0f, 125.0f),   // L (11)
-        glm::vec3(30.0f, 0.0f, 85.0f),    // M (12)
-        glm::vec3(-15.0f, 0.0f, -105.0f), // N (13)
-        glm::vec3(-60.0f, 0.0f, -160.0f), // O (14)
-    };
 
-    std::vector<std::vector<int>> gavnarRoutes = {
-        {0, 1, 2, 3, 4, 5},
-        {6, 7, 8, 3, 9, 10},
-        {11, 12, 2, 8, 13, 14},
-    };
 
-    std::vector<std::string> gavnarStations = {
-        "Gavnar", "North Terminal", "East Junction", "South Gate", "West End",
-        "Final Stop", "Industrial Park", "Riverside", "Mountain View",
-        "Green Park", "UAM (kazn perdezhom)", "Sports Complex",
-        "Theater District", "Museum Quarter", "Airport Terminal"
-    };
+    cities.emplace_back("Simple City",
+        parisPoints,
+        parisRoutes,
+        parisStations);
+    cities.emplace_back("Warsaw",
+        warsawPoints,
+        warsawRoutes,
+        warsawStations);
+    cities.emplace_back("Minsk",
+        minskPoints,
+        minskRoutes,
+        minskStations);
+    cities.emplace_back("Metro City",
+        berlinPoints,
+        berlinRoutes,
+        berlinStations);
+    cities.emplace_back("Gavnar",
+        gavnarPoints,
+        gavnarRoutes,
+        gavnarStations);
+    cities.emplace_back("Subway City",
+        metroPoints,
+        metroRoutes,
+        metroStations);
+    cities.emplace_back("Valley Network",
+        valleyPoints,
+        valleyRoutes,
+        valleyStations);
 
-    // Город 2 - новый Metro City
-    std::vector<glm::vec3> metroPoints = {
-        glm::vec3(-80.0f, 0.0f, 80.0f),   // 0
-        glm::vec3(0.0f, 0.0f, 90.0f),     // 1
-        glm::vec3(80.0f, 0.0f, 60.0f),    // 2
-        glm::vec3(100.0f, 0.0f, 0.0f),    // 3
-        glm::vec3(60.0f, 0.0f, -80.0f),   // 4
-        glm::vec3(-20.0f, 0.0f, -100.0f), // 5
-        glm::vec3(-90.0f, 0.0f, -40.0f),  // 6
-        glm::vec3(-70.0f, 0.0f, 20.0f),   // 7
-        glm::vec3(20.0f, 0.0f, 40.0f),    // 8
-        glm::vec3(40.0f, 0.0f, -20.0f),   // 9
-    };
 
-    std::vector<std::vector<int>> metroRoutes = {
-        {0, 1, 2, 3},
-        {4, 5, 6, 7},
-        {8, 9, 3, 5},
-    };
 
-    std::vector<std::string> metroStations = {
-        "Metro Center", "North Plaza", "East Tower", "Commerce Hub",
-        "South Port", "Industrial Zone", "West Quarter", "Park Avenue",
-        "City Square", "Business District"
-    };
 
-    // Город 3 - Valley Network
-    std::vector<glm::vec3> valleyPoints = {
-        glm::vec3(-120.0f, 0.0f, 0.0f),   // 0
-        glm::vec3(-60.0f, 0.0f, 40.0f),   // 1
-        glm::vec3(0.0f, 0.0f, 20.0f),     // 2
-        glm::vec3(60.0f, 0.0f, 60.0f),    // 3
-        glm::vec3(120.0f, 0.0f, 20.0f),   // 4
-        glm::vec3(80.0f, 0.0f, -40.0f),   // 5
-        glm::vec3(20.0f, 0.0f, -80.0f),   // 6
-        glm::vec3(-40.0f, 0.0f, -60.0f),  // 7
-    };
-
-    std::vector<std::vector<int>> valleyRoutes = {
-        {0, 1, 2, 3, 4},
-        {5, 6, 7, 0},
-    };
-
-    std::vector<std::string> valleyStations = {
-        "Valley Station", "Mountain View", "Central Valley",
-        "Highland Park", "East Ridge", "Canyon Point",
-        "River Crossing", "West Valley"
-    };
-
-    cities.emplace_back("Gavnar", gavnarPoints, gavnarRoutes, gavnarStations);
-    cities.emplace_back("Metro City", metroPoints, metroRoutes, metroStations);
-    cities.emplace_back("Valley Network", valleyPoints, valleyRoutes, valleyStations);
 }
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
@@ -276,53 +227,53 @@ std::vector<std::string> faces = {
     "../textures/back.jpg"
 };
 
-std::vector<glm::vec3> allPoints = {
-    // Индексы 0-6: точки первого маршрута
-    glm::vec3(-60.0f, 0.0f, 51.0f),   // A (0)
-    glm::vec3(-30.0f, 0.0f, 45.0f),   // B (1)
-    glm::vec3(-5.0f, 0.0f, 30.0f),    // C (2)
-    glm::vec3(35.0f, 0.0f, -10.0f),    // D (3)
-    glm::vec3(110.0f, 0.0f, -15.0f),    // E (4)
-    glm::vec3(150.0f, 0.0f, 40.0f),    // F (5)
-
-
-
-    glm::vec3(-115.0f, 0.0f, -45.0f),    // G (6)
-    glm::vec3(-70.0f, 0.0f, -55.0f),  // H (7)
-    glm::vec3(-20.0f, 0.0f, -25.0f),  // I (8)
-    glm::vec3(75.0f, 0.0f, 45.0f),   // J (9)
-    glm::vec3(130.0f, 0.0f, 75.0f),   // K (10)
-    glm::vec3(60.0f, 0.0f, 125.0f),   // L (11)
-    glm::vec3(30.0f, 0.0f, 85.0f),    // M (12)
-    glm::vec3(-15.0f, 0.0f, -105.0f),    // N (13)
-    glm::vec3(-60.0f, 0.0f, -160.0f),    // O (14)
-};
-
-// Определяем маршруты по индексам
-std::vector<std::vector<int>> routeIndices = {
-    {0, 1, 2, 3, 4, 5},      // route 1
-    {6, 7, 8, 3, 9, 10,},    // route 2
-    {11, 12, 2, 8, 13, 14,},    // route 3
-};
-
-// Добавляем названия станций
-std::vector<std::string> stationNames = {
-    "Gavnar",                // Станция 0 (вместо "Central Station")
-    "North Terminal",        // Станция 1 (вместо "Северная")
-    "East Junction",         // Станция 2 (вместо "Восточная")
-    "South Gate",            // Станция 3 (вместо "Южная")
-    "West End",              // Станция 4 (вместо "Западная")
-    "Final Stop",            // Станция 5 (вместо "Конечная")
-    "Industrial Park",       // Станция 6 (вместо "Промышленная")
-    "Riverside",             // Станция 7 (вместо "Речная")
-    "Mountain View",         // Станция 8 (вместо "Горная")
-    "Green Park",            // Станция 9 (вместо "Парковая")
-    "UAM (kazn perdezhom)",  // Станция 10 (вместо "Университетская")
-    "Sports Complex",        // Станция 11 (вместо "Спортивная")
-    "Theater District",      // Станция 12 (вместо "Театральная")
-    "Museum Quarter",        // Станция 13 (вместо "Музейная")
-    "Airport Terminal"       // Станция 14 (вместо "Аэропорт")
-};
+// std::vector<glm::vec3> allPoints = {
+//     // Индексы 0-6: точки первого маршрута
+//     glm::vec3(-60.0f, 0.0f, 51.0f),   // A (0)
+//     glm::vec3(-30.0f, 0.0f, 45.0f),   // B (1)
+//     glm::vec3(-5.0f, 0.0f, 30.0f),    // C (2)
+//     glm::vec3(35.0f, 0.0f, -10.0f),    // D (3)
+//     glm::vec3(110.0f, 0.0f, -15.0f),    // E (4)
+//     glm::vec3(150.0f, 0.0f, 40.0f),    // F (5)
+//
+//
+//
+//     glm::vec3(-115.0f, 0.0f, -45.0f),    // G (6)
+//     glm::vec3(-70.0f, 0.0f, -55.0f),  // H (7)
+//     glm::vec3(-20.0f, 0.0f, -25.0f),  // I (8)
+//     glm::vec3(75.0f, 0.0f, 45.0f),   // J (9)
+//     glm::vec3(130.0f, 0.0f, 75.0f),   // K (10)
+//     glm::vec3(60.0f, 0.0f, 125.0f),   // L (11)
+//     glm::vec3(30.0f, 0.0f, 85.0f),    // M (12)
+//     glm::vec3(-15.0f, 0.0f, -105.0f),    // N (13)
+//     glm::vec3(-60.0f, 0.0f, -160.0f),    // O (14)
+// };
+//
+// // Определяем маршруты по индексам
+// std::vector<std::vector<int>> routeIndices = {
+//     {0, 1, 2, 3, 4, 5},      // route 1
+//     {6, 7, 8, 3, 9, 10,},    // route 2
+//     {11, 12, 2, 8, 13, 14,},    // route 3
+// };
+//
+// // Добавляем названия станций
+// std::vector<std::string> stationNames = {
+//     "Gavnar",                // Станция 0 (вместо "Central Station")
+//     "North Terminal",        // Станция 1 (вместо "Северная")
+//     "East Junction",         // Станция 2 (вместо "Восточная")
+//     "South Gate",            // Станция 3 (вместо "Южная")
+//     "West End",              // Станция 4 (вместо "Западная")
+//     "Final Stop",            // Станция 5 (вместо "Конечная")
+//     "Industrial Park",       // Станция 6 (вместо "Промышленная")
+//     "Riverside",             // Станция 7 (вместо "Речная")
+//     "Mountain View",         // Станция 8 (вместо "Горная")
+//     "Green Park",            // Станция 9 (вместо "Парковая")
+//     "UAM (kazn perdezhom)",  // Станция 10 (вместо "Университетская")
+//     "Sports Complex",        // Станция 11 (вместо "Спортивная")
+//     "Theater District",      // Станция 12 (вместо "Театральная")
+//     "Museum Quarter",        // Станция 13 (вместо "Музейная")
+//     "Airport Terminal"       // Станция 14 (вместо "Аэропорт")
+// };
 
 void loadSelectedCity(GLFWwindow* window) {
     if (selectedCityIndex >= cities.size()) return;
@@ -349,6 +300,7 @@ void loadSelectedCity(GLFWwindow* window) {
     size_t routeCount = railroadMap.getRouteCount();
     for (size_t i = 0; i < routeCount; ++i) {
         trainManager.addTrain(trainModelPtr, i, 25.0f);
+        std::cout << "Added train for route " << i << std::endl;
     }
 
     citySelected = true;
@@ -500,9 +452,9 @@ void test_setup(GLFWwindow* window) {
         trainModelPtr->rotation_deg = glm::vec3(0, 90, 0);
     }
 
-    trainManager.addTrain(trainModelPtr, 0, 25.0f);
-    trainManager.addTrain(trainModelPtr, 1, 25.0f);
-    trainManager.addTrain(trainModelPtr, 2, 25.0f);
+    // trainManager.addTrain(trainModelPtr, 0, 25.0f);
+    // trainManager.addTrain(trainModelPtr, 1, 25.0f);
+    // trainManager.addTrain(trainModelPtr, 2, 25.0f);
 
     setup_ground();
 }
