@@ -97,6 +97,9 @@ void App::run() {
     // depth
     glEnable(GL_DEPTH_TEST);
 
+    // MSAA
+    glEnable(GL_MULTISAMPLE);
+
     // viewport
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -124,6 +127,7 @@ void App::glfw_init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
     // Дополнительные подсказки для совместимости
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
