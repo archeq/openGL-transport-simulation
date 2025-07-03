@@ -130,7 +130,7 @@ Texture boxTexture, boxSpecularMap, railTexture, stationTexture;
 Camera camera;
 Model trainModel;
 LightSource lightSource;
-// Skybox skybox;
+Skybox skybox;
 
 
 
@@ -183,15 +183,15 @@ void test_setup() {
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
 
-    // std::vector<std::string> faces = {
-    //     "../textures/skybox_right.png",
-    //     "../textures/skybox_left.png",
-    //     "../textures/skybox_top.png",
-    //     "../textures/skybox_bottom.png",
-    //     "../textures/skybox_front.png",
-    //     "../textures/skybox_back.png"
-    // };
-    // skybox.prepare(faces);
+    std::vector<std::string> faces = {
+        "../textures/skybox_right.png",
+        "../textures/skybox_left.png",
+        "../textures/skybox_top.png",
+        "../textures/skybox_bottom.png",
+        "../textures/skybox_front.png",
+        "../textures/skybox_back.png"
+    };
+    skybox.prepare(faces);
 
     // СНАЧАЛА инициализируем RailroadMap
     railroadMap.initialize(allPoints, routeIndices);
@@ -312,7 +312,7 @@ void render(GLFWwindow *window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // skybox
-    // skybox.draw(camera);
+    skybox.draw(camera);
 
     // light
     lightSource.draw_as_cube(camera, 3);
