@@ -27,7 +27,7 @@ public:
     glm::vec3 WorldUp;
     float Yaw;
     float Pitch;
-    float MovementSpeed = 5.0f;
+    float MovementSpeed = 15.0f;
     float MouseSensitivity = 0.14f;
     float Zoom = 45.0f;
     float near_distance = 0.1f;

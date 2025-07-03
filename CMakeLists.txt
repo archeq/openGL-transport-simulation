@@ -21,10 +21,8 @@ add_executable(app
         src/view/Shader.cpp
         src/view/Texture.cpp
         src/view/Camera.cpp
-        src/view/Renderer.cpp
         src/model/Mesh.cpp
         src/model/Model.cpp
-        src/model/Scene.cpp
         src/glad/glad.c
         src/main.cpp
         src/view/LightSource.cpp
