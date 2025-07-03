@@ -18,6 +18,7 @@ public:
     void glfw_init(); // pretty much self-explanatory
     void glad_init();
 
+
 private:
     bool is_glfw_initialized = false;
     bool is_glad_initialized = false;

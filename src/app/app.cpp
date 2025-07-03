@@ -23,14 +23,16 @@
 #include "stb/stb_image.h"
 #include <vector>
 #include <string>
-
 #include "glm/gtx/transform.hpp"
-
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 900
 #define WINDOW_RATIO ((float) WINDOW_WIDTH / (float) WINDOW_HEIGHT)
 #define WINDOW_TITLE "Simulation"
+
 
 // these must be global because callbacks must be either functions or static methods
 float mouse_last_x;
@@ -40,6 +42,8 @@ bool cursor_visible = false;
 
 bool error = false;
 
+
+
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
     error = true;
     std::cout << "[OpenGL Error](" << type << ") " << message << std::endl;
@@ -48,33 +52,53 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
 void App::run() {
     // glfw initialization
     glfw_init();
+
+    // Проверяем, что GLFW инициализирован
+    if (!is_glfw_initialized) {
+        std::cout << "GLFW initialization failed" << std::endl;
+        return;
+    }
+
     window = window_init(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    // cursor
+    // ОБЯЗАТЕЛЬНО проверяем, что окно создано
+    if (!window) {
+        std::cout << "Window creation failed, terminating" << std::endl;
+        terminate();
+        return;
+    }
+
+    // Только после успешного создания окна можем использовать GLFW функции
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad (openGL) initialization
     glad_init();
 
+    // Проверяем, что GLAD инициализирован
+    if (!is_glad_initialized) {
+        std::cout << "GLAD initialization failed" << std::endl;
+        terminate();
+        return;
+    }
+
     stbi_set_flip_vertically_on_load(true);
 
     // depth
     glEnable(GL_DEPTH_TEST);
 
-
     // viewport
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    // Enable debug output
-    // glEnable(GL_DEBUG_OUTPUT);
-    // glDebugMessageCallback(MessageCallback, 0);
 
     // running the loop
     loop();
 }
 
 void App::terminate() {
+    // Очистка ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
     std::cout << "App was terminated" << std::endl;
 }
@@ -82,30 +106,79 @@ void App::terminate() {
 void App::glfw_init() {
     if (is_glfw_initialized) return;
 
-    glfwInit();
+    std::cout << "Initializing GLFW..." << std::endl;
+
+    if (!glfwInit()) {
+        std::cout << "Failed to initialize GLFW" << std::endl;
+        const char* description;
+        int error_code = glfwGetError(&description);
+        std::cout << "GLFW Error (" << error_code << "): " << description << std::endl;
+        return;
+    }
+
+    std::cout << "GLFW initialized successfully" << std::endl;
+
+    // Попробуем сначала с более низкой версией OpenGL
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Дополнительные подсказки для совместимости
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     is_glfw_initialized = true;
 }
 
 void App::glad_init() {
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        terminate();
+    if (is_glad_initialized) {
         return;
     }
+
+    std::cout << "Initializing GLAD..." << std::endl;
+
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return;
+    }
+
+    std::cout << "GLAD initialized successfully" << std::endl;
+    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
     is_glad_initialized = true;
 }
 
 GLFWwindow *App::window_init(int width, int height) {
-    GLFWwindow *window = glfwCreateWindow(width, height, WINDOW_TITLE, nullptr, nullptr);
+    // Проверяем, что GLFW инициализирован
+    if (!is_glfw_initialized) {
+        std::cout << "ERROR: GLFW not initialized before window creation" << std::endl;
+        return nullptr;
+    }
+
+    // Дополнительные подсказки для создания окна
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    std::cout << "Attempting to create window " << width << "x" << height << std::endl;
+
+    window = glfwCreateWindow(width, height, WINDOW_TITLE, nullptr, nullptr);
+
     if (!window) {
         std::cout << "Failed to create GLFW window" << std::endl;
-        terminate();
+        const char* description;
+        int error_code = glfwGetError(&description);
+        std::cout << "GLFW Error (" << error_code << "): " << description << std::endl;
+
+        // Попробуем с более совместимыми настройками
+        std::cout << "Trying with compatibility profile..." << std::endl;
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+        window = glfwCreateWindow(width, height, WINDOW_TITLE, nullptr, nullptr);
+
+        if (!window) {
+            std::cout << "Failed to create window even with compatibility profile" << std::endl;
+            return nullptr;
+        }
     }
+
+    std::cout << "Window created successfully" << std::endl;
     glfwMakeContextCurrent(window);
 
     // mouse
@@ -113,6 +186,8 @@ GLFWwindow *App::window_init(int width, int height) {
     mouse_last_y = height / 2.0f;
     return window;
 }
+
+
 
 Shader simpleShader, lightSourceShader, modelShader;
 unsigned int VBO, cubeVAO, lightCubeVAO;
@@ -171,6 +246,24 @@ std::vector<std::vector<int>> routeIndices = {
     {11, 12, 2, 8, 13, 14,},    // route 3
 };
 
+// Добавляем названия станций
+std::vector<std::string> stationNames = {
+    "Gavnar",                // Станция 0 (вместо "Central Station")
+    "North Terminal",        // Станция 1 (вместо "Северная")
+    "East Junction",         // Станция 2 (вместо "Восточная")
+    "South Gate",            // Станция 3 (вместо "Южная")
+    "West End",              // Станция 4 (вместо "Западная")
+    "Final Stop",            // Станция 5 (вместо "Конечная")
+    "Industrial Park",       // Станция 6 (вместо "Промышленная")
+    "Riverside",             // Станция 7 (вместо "Речная")
+    "Mountain View",         // Станция 8 (вместо "Горная")
+    "Green Park",            // Станция 9 (вместо "Парковая")
+    "UAM (kazn perdezhom)",  // Станция 10 (вместо "Университетская")
+    "Sports Complex",        // Станция 11 (вместо "Спортивная")
+    "Theater District",      // Станция 12 (вместо "Театральная")
+    "Museum Quarter",        // Станция 13 (вместо "Музейная")
+    "Airport Terminal"       // Станция 14 (вместо "Аэропорт")
+};
 
 // добавьте эту функцию после функции draw_test_box
 void draw_ground(const Camera& camera, const LightSource& lightSource) {
@@ -262,11 +355,19 @@ void setup_ground() {
 }
 
 
-void test_setup() {
+void test_setup(GLFWwindow* window) {
     // Temporal function for TESTING only
     simpleShader = Shader("../shaders/specular_map.vert", "../shaders/specular_map.frag");
     lightSourceShader = Shader("../shaders/light_source.vert", "../shaders/light_source.frag");
     modelShader = Shader("../shaders/model_shader.vert", "../shaders/model_shader.frag");
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 460");
+
     boxTexture = Texture(std::string("../textures/container.png"));
     boxSpecularMap = Texture(std::string("../textures/container2_specular.png"));
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -280,6 +381,10 @@ void test_setup() {
     railroadMap.initialize(allPoints, routeIndices);
     railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
     railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
+
+
+
+    railroadMap.setStationNames(stationNames);
 
     std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
 
@@ -425,21 +530,39 @@ void render(GLFWwindow *window) {
     // railroad
     railroadMap.draw(simpleShader, camera, lightSource);
 
+    // ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Этикетки станций
+    railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    // GUI панель управления
+    if (ImGui::Begin("Metro Control")) {
+        if (ImGui::Button("Toggle Station Labels")) {
+            railroadMap.toggleStationLabels();
+        }
+    }
+    ImGui::End();
+
+    // Рендеринг ImGui
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
     glUseProgram(0);
     glfwSwapBuffers(window);
 }
 
 void App::loop() {
-    test_setup();
+    test_setup(window);
     while (!glfwWindowShouldClose(window)) {
 
         // time
         const auto currentFrame = static_cast<float>(glfwGetTime());
         deltaTime_s = currentFrame - lastFrame_s;
         lastFrame_s = currentFrame;
-
-
 
         // input
         process_input(window);

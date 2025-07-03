@@ -14,6 +14,9 @@
 #include "LightSource.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
 
 // Структура для хранения кривой Безье третьего порядка
 
@@ -150,11 +153,13 @@ public:
     }
 };
 
+
+
 class RailroadMap {
     std::vector<glm::vec3> allPoints; // Все точки
     std::vector<std::vector<int>> routeIndices; // Маршруты как индексы точек
     std::vector<CatmullRomSpline> routes;
-
+    std::vector<std::string> stationNames; // Для хранения названий станций
 
     std::unique_ptr<Mesh> railMesh;
     std::unique_ptr<Mesh> stationMesh;
@@ -165,6 +170,7 @@ class RailroadMap {
     unsigned int railTextureID = 0, stationTextureID = 0;
     unsigned int boxDiffuseTextureID = 0, boxSpecularTextureID = 0;
     bool boxTexturesLoaded = false;
+    bool showStationLabels = true; // Добавьте эту строку
 
     void createRailsMesh();
     void createStationsMesh();
@@ -177,6 +183,11 @@ public:
     RailroadMap() = default;
     RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints);
     std::vector<glm::vec3> stations;
+
+    void setStationNames(const std::vector<std::string>& names);
+    void drawStationLabels(const Camera& camera, int windowWidth, int windowHeight);
+    void toggleStationLabels() { showStationLabels = !showStationLabels; }
+    glm::vec2 worldToScreen(const glm::vec3& worldPos, const Camera& camera, int width, int height);
 
     void setPoints(const std::vector<glm::vec3>& points);
     void addRoute(const std::vector<int>& pointIndices);
