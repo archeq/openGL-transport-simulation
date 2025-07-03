@@ -17,20 +17,20 @@ add_definitions(-DGLFW_INCLUDE_NONE)
 
 # executable
 add_executable(app
+        src/glad/glad.c
         src/app/app.cpp
         src/view/Shader.cpp
         src/view/Texture.cpp
         src/view/Camera.cpp
+        src/view/LightSource.cpp
+        src/view/Skybox.cpp
+        src/model/RailroadMap.cpp
         src/model/Mesh.cpp
         src/model/Model.cpp
-        src/glad/glad.c
-        src/main.cpp
-        src/view/LightSource.cpp
-        src/model/RailroadMap.cpp
         src/model/Train.cpp
         src/model/Train.h
         src/model/TrainManager.cpp
-        src/model/TrainManager.h
+        src/main.cpp
 )
 
 target_link_libraries(app PRIVATE glfw assimp::assimp)
