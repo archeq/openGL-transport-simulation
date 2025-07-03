@@ -177,11 +177,6 @@ void test_setup() {
                         glm::vec3(0.5f, 0.5f, 0.5f),
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
-
-
-
-
-
     skybox.prepare(faces);
 
     // СНАЧАЛА инициализируем RailroadMap
