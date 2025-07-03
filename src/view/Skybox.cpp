@@ -105,7 +105,10 @@ void Skybox::draw(const Camera &camera) const {
     shader.use();
     shader.setMat4("projection", camera.getProjectionMatrix());
     shader.setMat4("view", glm::mat4(glm::mat3(camera.getViewMatrix())));
+    shader.setInt("skybox", 0);
+
     glBindVertexArray(VAO);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glDepthMask(GL_TRUE);

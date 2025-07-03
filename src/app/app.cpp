@@ -21,6 +21,9 @@
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "stb/stb_image.h"
+#include <vector>
+#include <string>
+
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 900
@@ -121,6 +124,16 @@ RailroadMap railroadMap;
 TrainManager trainManager(railroadMap);
 std::shared_ptr<Model> trainModelPtr;
 
+
+std::vector<std::string> faces = {
+    "../textures/skybox_right.png",
+    "../textures/skybox_left.png",
+    "../textures/skybox_top.png",
+    "../textures/skybox_bottom.png",
+    "../textures/skybox_front.png",
+    "../textures/skybox_back.png"
+};
+
 std::vector<glm::vec3> allPoints = {
     // Индексы 0-6: точки первого маршрута
     glm::vec3(-60.0f, 0.0f, 51.0f),   // A (0)
@@ -165,16 +178,13 @@ void test_setup() {
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
 
-    std::vector<std::string> faces = {
-        "../textures/skybox_right.png",
-        "../textures/skybox_left.png",
-        "../textures/skybox_top.png",
-        "../textures/skybox_bottom.png",
-        "../textures/skybox_front.png",
-        "../textures/skybox_back.png"
-    };
 
-    skybox = Skybox();
+
+
+
+
+
+
     skybox.prepare(faces);
 
     // СНАЧАЛА инициализируем RailroadMap
