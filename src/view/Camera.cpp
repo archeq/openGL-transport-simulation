@@ -8,7 +8,7 @@
 #include "glm/ext/matrix_clip_space.hpp"
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float ratio) {
-    position = position;
+    this->position = position;
     WorldUp = up;
     Yaw = yaw;
     Pitch = pitch;
@@ -30,25 +30,30 @@ glm::mat4 Camera::getViewMatrix() const {
 }
 
 void Camera::ProcessKeyboard(Camera_actions action, float deltaTime) {
-    float velocity = MovementSpeed * deltaTime;
-    if (action == FORWARD)
-        position += Front * velocity;
-    if (action == BACKWARD)
-        position -= Front * velocity;
-    if (action == LEFT)
-        position -= Right * velocity;
-    if (action == RIGHT)
-        position += Right * velocity;
-    if (action == UP)
-        position += Up * velocity;
-    if (action == DOWN)
-        position -= Up * velocity;
-    if (action == KEY_1)
-        MovementSpeed = 10.0f;
-    if (action == KEY_2)
-        MovementSpeed = 15.0f;
-    if (action == KEY_3)
-        MovementSpeed = 25.0f;
+    if (mode == FREE) {
+        float velocity = MovementSpeed * deltaTime;
+        if (action == FORWARD)
+            position += Front * velocity;
+        if (action == BACKWARD)
+            position -= Front * velocity;
+        if (action == LEFT)
+            position -= Right * velocity;
+        if (action == RIGHT)
+            position += Right * velocity;
+        if (action == UP)
+            position += Up * velocity;
+        if (action == DOWN)
+            position -= Up * velocity;
+        if (action == KEY_1)
+            MovementSpeed = 10.0f;
+        if (action == KEY_2)
+            MovementSpeed = 15.0f;
+        if (action == KEY_3)
+            MovementSpeed = 25.0f;
+    }
+    if (mode == FOLLOW) {
+        // In FOLLOW mode, the camera follows a target (e.g., a train)
+    }
 
 }
 
@@ -56,19 +61,44 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
     xoffset *= MouseSensitivity;
     yoffset *= MouseSensitivity;
 
-    Yaw   += xoffset;
-    Pitch += yoffset;
+    if (mode == FREE) {
+        Yaw += xoffset;
+        Pitch += yoffset;
 
-    // make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (constrainPitch)
-    {
-        if (Pitch > 89.0f)
-            Pitch = 89.0f;
-        if (Pitch < -89.0f)
-            Pitch = -89.0f;
+        if (constrainPitch) {
+            if (Pitch > 89.0f)
+                Pitch = 89.0f;
+            if (Pitch < -89.0f)
+                Pitch = -89.0f;
+        }
+
     }
 
-    // update Front, Right and Up Vectors using the updated Euler angles
+    if (mode == FOLLOW) {
+        Yaw += xoffset;
+        Pitch += yoffset;
+
+        if (constrainPitch) {
+            if (Pitch > 89.0f)
+                Pitch = 89.0f;
+            if (Pitch < -89.0f)
+                Pitch = -89.0f;
+        }
+
+        // Convert spherical coordinates to Cartesian coordinates
+        float yawRad = glm::radians(Yaw);
+        float pitchRad = glm::radians(Pitch);
+
+        glm::vec3 offset;
+        offset.x = follow_distance * cos(pitchRad) * cos(yawRad);
+        offset.y = follow_distance * sin(pitchRad);
+        offset.z = follow_distance * cos(pitchRad) * sin(yawRad);
+
+        position = target_position - offset; // Keep the camera at the right distance, orbiting the target
+        Front = glm::normalize(target_position - position); // Always look at the target
+
+    }
+
     updateCameraVectors();
 }
 
@@ -81,18 +111,43 @@ void Camera::ProcessMouseScroll(float yoffset) {
 }
 
 void Camera::updateCameraVectors() {
-    // calculate the new Front vector
-    glm::vec3 front;
-    front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-    front.y = sin(glm::radians(Pitch));
-    front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-    Front = glm::normalize(front);
-    // also re-calculate the Right and Up vector
-    Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-    Up    = glm::normalize(glm::cross(Right, Front));
+    if (mode == FREE) {
+        // calculate the new Front vector
+        glm::vec3 front;
+        front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        front.y = sin(glm::radians(Pitch));
+        front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        Front = glm::normalize(front);
+        // also re-calculate the Right and Up vector
+        Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+        Up    = glm::normalize(glm::cross(Right, Front));
+    }
+
+    if (mode == FOLLOW) {
+        // In FOLLOW mode, the camera's Front vector is always directed towards the target
+        // Convert spherical coordinates to Cartesian coordinates
+        float yawRad = glm::radians(Yaw);
+        float pitchRad = glm::radians(Pitch);
+
+        glm::vec3 offset;
+        offset.x = follow_distance * cos(pitchRad) * cos(yawRad);
+        offset.y = follow_distance * sin(pitchRad);
+        offset.z = follow_distance * cos(pitchRad) * sin(yawRad);
+
+        position = target_position - offset; // Keep the camera at the right distance, orbiting the target
+        Front = glm::normalize(target_position - position); // Always look at the target
+        // Recalculate Right and Up vectors
+        Right = glm::normalize(glm::cross(Front, WorldUp));
+        Up    = glm::normalize(glm::cross(Right, Front));
+    }
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {
     return glm::perspective(glm::radians(Zoom), ratio, near_distance, far_distance);
+}
+
+void Camera::update() {
+    if (mode == FOLLOW)
+        updateCameraVectors();
 }
 

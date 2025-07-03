@@ -270,6 +270,7 @@ void test_setup() {
     boxTexture = Texture(std::string("../textures/container.png"));
     boxSpecularMap = Texture(std::string("../textures/container2_specular.png"));
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+    camera.mode = FOLLOW;
     lightSource = LightSource(glm::vec3(0.0f, 50.0f, 0.0f),
                         glm::vec3(0.5f, 0.5f, 0.5f),
                          glm::vec3(0.5f, 0.5f, 0.5f),
@@ -439,10 +440,15 @@ void App::loop() {
         deltaTime_s = currentFrame - lastFrame_s;
         lastFrame_s = currentFrame;
 
-
-
         // input
         process_input(window);
+
+        // camera
+        if (camera.mode == FOLLOW) {
+            glm::vec3 target = trainManager.getTrain(0)->getPosition();
+            camera.target_position = target;
+        }
+        camera.update();
 
         // train
         trainManager.update(deltaTime_s);
