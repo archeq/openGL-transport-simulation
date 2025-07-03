@@ -40,6 +40,7 @@ bool firstMouse = true;
 bool cursor_visible = false;
 
 bool error = false;
+bool pauseUpdate = true;
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
     error = true;
@@ -692,6 +693,11 @@ void render(GLFWwindow *window) {
     // GUI панель управления
     // GUI панель управления (замените существующий блок ImGui)
     if (ImGui::Begin("Camera Control")) {
+        ImGui::Text("Update core");
+        if (ImGui::Button("pause")) {
+            pauseUpdate = !pauseUpdate;
+        }
+
         ImGui::Text("Label Display Mode");
 
         if (ImGui::RadioButton("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC && railroadMap.showStationLabels)) {
@@ -773,7 +779,8 @@ void App::loop() {
         camera.update();
 
         // train
-        trainManager.update(deltaTime_s);
+        if (!pauseUpdate)
+            trainManager.update(deltaTime_s);
 
         // rendering
         render(window);
