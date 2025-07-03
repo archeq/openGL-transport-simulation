@@ -60,9 +60,11 @@ RailroadMap railroadMap;
 TrainManager trainManager(railroadMap);
 std::shared_ptr<Model> trainModelPtr;
 
-// добавьте эти переменные в секцию глобальных переменных после других объявлений
 Texture groundTexture;
 unsigned int groundVAO, groundVBO;
+
+size_t selectedTrainIndex = 0;
+bool freeCameraMode = false;
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     if (camera.mode == FOLLOW) {
@@ -485,6 +487,7 @@ void render(GLFWwindow *window) {
     railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // GUI панель управления
+    // GUI панель управления (замените существующий блок ImGui)
     if (ImGui::Begin("Camera Control")) {
         ImGui::Text("Label Display Mode");
 
@@ -500,6 +503,30 @@ void render(GLFWwindow *window) {
 
         if (ImGui::RadioButton("Off", !railroadMap.showStationLabels)) {
             railroadMap.showStationLabels = false;
+        }
+
+        ImGui::Separator();
+        ImGui::Text("Camera Mode");
+
+        if (ImGui::RadioButton("Free Camera", freeCameraMode)) {
+            freeCameraMode = true;
+            camera.mode = FREE;
+        }
+
+        if (ImGui::RadioButton("Follow Train", !freeCameraMode)) {
+            freeCameraMode = false;
+            camera.mode = FOLLOW;
+        }
+
+        if (!freeCameraMode) {
+            ImGui::Text("Select Train to Follow:");
+            size_t trainCount = trainManager.getTrainCount();
+            for (size_t i = 0; i < trainCount; i++) {
+                std::string trainLabel = "Train " + std::to_string(i + 1);
+                if (ImGui::RadioButton(trainLabel.c_str(), selectedTrainIndex == i)) {
+                    selectedTrainIndex = i;
+                }
+            }
         }
     }
     ImGui::End();
@@ -526,9 +553,11 @@ void App::loop() {
         process_input(window);
 
         // camera
-        if (camera.mode == FOLLOW) {
-            glm::vec3 target = trainManager.getTrain(0)->getPosition();
-            camera.target_position = target;
+        if (!freeCameraMode && camera.mode == FOLLOW) {
+            if (static_cast<size_t>(selectedTrainIndex) < trainManager.getTrainCount()) {
+                glm::vec3 target = trainManager.getTrain(selectedTrainIndex)->getPosition();
+                camera.target_position = target;
+            }
         }
         camera.update();
 

@@ -32,6 +32,8 @@ public:
     size_t getTrainCount() const { return trains.size(); }
     Train* getTrain(size_t index);
 
+
+
 private:
     const RailroadMap& railroadMap;
     std::vector<std::unique_ptr<Train>> trains;
