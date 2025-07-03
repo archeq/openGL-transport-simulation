@@ -540,7 +540,7 @@ void render(GLFWwindow *window) {
     railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // GUI панель управления
-    if (ImGui::Begin("Metro Control")) {
+    if (ImGui::Begin("Camera Control")) {
         if (ImGui::Button("Toggle Station Labels")) {
             railroadMap.toggleStationLabels();
         }
