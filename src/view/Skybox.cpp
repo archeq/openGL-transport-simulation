@@ -103,6 +103,8 @@ void Skybox::prepare(const std::vector<std::string> &faces) {
 void Skybox::draw(const Camera &camera) const {
     glDepthMask(GL_FALSE);
     shader.use();
+
+    shader.setInt("skybox", 0);
     shader.setMat4("projection", camera.getProjectionMatrix());
     shader.setMat4("view", glm::mat4(glm::mat3(camera.getViewMatrix())));
     glBindVertexArray(VAO);
