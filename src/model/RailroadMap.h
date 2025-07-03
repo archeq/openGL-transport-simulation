@@ -197,7 +197,15 @@ public:
     void setLabelDisplayMode(LabelDisplayMode mode) { labelDisplayMode = mode; }
     LabelDisplayMode getLabelDisplayMode() const { return labelDisplayMode; }
     const char* getLabelDisplayModeString() const {
-        return labelDisplayMode == LabelDisplayMode::STATIC ? "Static" : "Dynamic";
+        switch (labelDisplayMode) {
+            case LabelDisplayMode::STATIC:
+                return "Static";
+            case LabelDisplayMode::DYNAMIC:
+                return "Dynamic";
+            default:
+                return showStationLabels ?
+                    (labelDisplayMode == LabelDisplayMode::STATIC ? "Static" : "Dynamic") : "Off";
+        }
     }
 
     glm::vec2 worldToScreen(const glm::vec3& worldPos, const Camera& camera, int width, int height);

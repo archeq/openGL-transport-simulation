@@ -486,21 +486,20 @@ void render(GLFWwindow *window) {
 
     // GUI панель управления
     if (ImGui::Begin("Camera Control")) {
-        // Добавляем выбор режима отображения лейблов
         ImGui::Text("Label Display Mode");
-        if (ImGui::BeginCombo("##LabelDisplayMode", railroadMap.getLabelDisplayModeString())) {
-            if (ImGui::Selectable("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC)) {
-                railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
-                railroadMap.showStationLabels = true;
-            }
-            if (ImGui::Selectable("Dynamic", railroadMap.getLabelDisplayMode() == LabelDisplayMode::DYNAMIC)) {
-                railroadMap.setLabelDisplayMode(LabelDisplayMode::DYNAMIC);
-                railroadMap.showStationLabels = true;
-            }
-            if (ImGui::Selectable("Off", !railroadMap.showStationLabels)) {
-                railroadMap.showStationLabels = false;
-            }
-            ImGui::EndCombo();
+
+        if (ImGui::RadioButton("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC && railroadMap.showStationLabels)) {
+            railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
+            railroadMap.showStationLabels = true;
+        }
+
+        if (ImGui::RadioButton("Dynamic", railroadMap.getLabelDisplayMode() == LabelDisplayMode::DYNAMIC && railroadMap.showStationLabels)) {
+            railroadMap.setLabelDisplayMode(LabelDisplayMode::DYNAMIC);
+            railroadMap.showStationLabels = true;
+        }
+
+        if (ImGui::RadioButton("Off", !railroadMap.showStationLabels)) {
+            railroadMap.showStationLabels = false;
         }
     }
     ImGui::End();
