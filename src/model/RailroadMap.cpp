@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <iostream>
 #include <glm/gtx/vector_angle.hpp>
-
+#include <set>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
@@ -77,21 +77,30 @@ void RailroadMap::initialize(const std::vector<glm::vec3>& points, const std::ve
     setPoints(points);
     std::cout << "Initialized with " << points.size() << " points" << std::endl;
 
+    // Сначала создаем все маршруты
     for (size_t i = 0; i < routeIndexArrays.size(); ++i) {
         const auto& routeIdx = routeIndexArrays[i];
         std::cout << "Adding route " << i << " with " << routeIdx.size() << " point indices" << std::endl;
-
         addRoute(routeIdx);
+    }
 
-        // Добавляем станции из этого маршрута
+    // Затем добавляем уникальные станции (без дублирования)
+    std::set<int> uniqueStationIndices;
+    for (const auto& routeIdx : routeIndexArrays) {
         for (int index : routeIdx) {
             if (index >= 0 && index < static_cast<int>(allPoints.size())) {
-                stations.push_back(allPoints[index]);
+                uniqueStationIndices.insert(index);
             }
         }
     }
 
+    // Добавляем станции в порядке индексов
+    for (int index : uniqueStationIndices) {
+        stations.push_back(allPoints[index]);
+    }
+
     std::cout << "Total routes created: " << routes.size() << std::endl;
+    std::cout << "Total unique stations: " << stations.size() << std::endl;
 
     createRailsMesh();
     createStationsMesh();
@@ -553,4 +562,51 @@ void RailroadMap::draw(const Shader &shader, const Camera &camera, const LightSo
     // draw_station_boxes(shader);
     draw_station_spheres(shader);
     
+}
+
+void RailroadMap::setStationNames(const std::vector<std::string>& names) {
+    stationNames = names;
+}
+
+glm::vec2 RailroadMap::worldToScreen(const glm::vec3& worldPos, const Camera& camera, int width, int height) {
+    glm::mat4 view = camera.getViewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)width/(float)height, 0.1f, 1000.0f);
+    glm::mat4 mvp = projection * view;
+
+    glm::vec4 clipSpace = mvp * glm::vec4(worldPos, 1.0f);
+    if (clipSpace.w <= 0) return glm::vec2(-1, -1); // За камерой
+
+    glm::vec3 ndc = glm::vec3(clipSpace) / clipSpace.w;
+    glm::vec2 screenPos;
+    screenPos.x = (ndc.x + 1.0f) * 0.5f * width;
+    screenPos.y = (1.0f - ndc.y) * 0.5f * height;
+
+    return screenPos;
+}
+
+void RailroadMap::drawStationLabels(const Camera& camera, int windowWidth, int windowHeight) {
+    if (!showStationLabels || stationNames.empty()) return;
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+    for (size_t i = 0; i < stations.size() && i < stationNames.size(); ++i) {
+        glm::vec2 screenPos = worldToScreen(stations[i], camera, windowWidth, windowHeight);
+
+        if (screenPos.x >= 0 && screenPos.x <= windowWidth &&
+            screenPos.y >= 0 && screenPos.y <= windowHeight) {
+
+            ImGui::SetNextWindowPos(ImVec2(screenPos.x + 10, screenPos.y - 10));
+            ImGui::Begin(("Station_" + std::to_string(i)).c_str(), nullptr,
+                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
+
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", stationNames[i].c_str());
+            ImGui::End();
+            }
+    }
+
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor();
 }
