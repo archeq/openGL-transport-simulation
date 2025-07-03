@@ -237,6 +237,12 @@ void App::process_input(GLFWwindow *window) const {
         camera.ProcessKeyboard(UP, deltaTime_s);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
         camera.ProcessKeyboard(DOWN, deltaTime_s);
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        camera.ProcessKeyboard(KEY_1, deltaTime_s);
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        camera.ProcessKeyboard(KEY_2, deltaTime_s);
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+        camera.ProcessKeyboard(KEY_3, deltaTime_s);
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {

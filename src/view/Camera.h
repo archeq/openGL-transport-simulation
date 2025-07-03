@@ -9,13 +9,16 @@
 #include "glm/mat4x4.hpp"
 
 
-enum Camera_Movement {
+enum Camera_actions {
     FORWARD,
     BACKWARD,
     LEFT,
     RIGHT,
     UP,
-    DOWN
+    DOWN,
+    KEY_1,
+    KEY_2,
+    KEY_3,
 };
 
 class Camera {
@@ -31,7 +34,7 @@ public:
     float MouseSensitivity = 0.14f;
     float Zoom = 45.0f;
     float near_distance = 0.1f;
-    float far_distance = 100.0f;
+    float far_distance = 200.0f;
     float ratio;
 
     // constructor with vectors
@@ -45,7 +48,7 @@ public:
 
 
     [[nodiscard]] glm::mat4 getViewMatrix() const; // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    void ProcessKeyboard(Camera_Movement direction, float deltaTime);
+    void ProcessKeyboard(Camera_actions action, float deltaTime);
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
     void ProcessMouseScroll(float yoffset);
 
