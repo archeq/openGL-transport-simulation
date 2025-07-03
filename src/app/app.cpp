@@ -182,9 +182,6 @@ void test_setup() {
 
 
 
-
-
-
     skybox.prepare(faces);
 
     // СНАЧАЛА инициализируем RailroadMap
