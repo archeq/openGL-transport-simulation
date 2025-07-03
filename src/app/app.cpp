@@ -237,7 +237,7 @@ void draw_ground(const Camera& camera, const LightSource& lightSource) {
     glm::mat4 model = glm::mat4(1.0f);
 
     // Масштабируем и позиционируем землю
-    model = glm::translate(model, glm::vec3(0.0f, -0.1f, 0.0f)); // Опускаем немного вниз
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // Опускаем немного вниз
     model = glm::scale(model, glm::vec3(1000.0f, 1.0f, 1000.0f)); // Делаем очень большой
 
     simpleShader.setMat4("projection", projection);
