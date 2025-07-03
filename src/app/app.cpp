@@ -37,7 +37,7 @@
 float mouse_last_x;
 float mouse_last_y;
 bool firstMouse = true;
-bool cursor_visible = false;
+bool cursor_visible = true;
 
 bool error = false;
 bool pauseUpdate = true;
@@ -324,7 +324,7 @@ std::vector<std::string> stationNames = {
     "Airport Terminal"       // Станция 14 (вместо "Аэропорт")
 };
 
-void loadSelectedCity() {
+void loadSelectedCity(GLFWwindow* window) {
     if (selectedCityIndex >= cities.size()) return;
 
     const City& city = cities[selectedCityIndex];
@@ -350,6 +350,10 @@ void loadSelectedCity() {
 
     citySelected = true;
     showMainMenu = false;
+
+    // Устанавливаем курсор в зависимости от состояния паузы
+    cursor_visible = pauseUpdate;
+    glfwSetInputMode(window, GLFW_CURSOR, cursor_visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
 // добавьте эту функцию после функции draw_test_box
@@ -525,6 +529,11 @@ void App::process_input(GLFWwindow *window) const {
             camera.ProcessKeyboard(KEY_2, deltaTime_s);
         if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
             camera.ProcessKeyboard(KEY_3, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+            pauseUpdate = !pauseUpdate;
+            cursor_visible = pauseUpdate;
+            glfwSetInputMode(window, GLFW_CURSOR, cursor_visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+        }
     }
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
         if (!tab_previous) {
@@ -875,7 +884,7 @@ void render(GLFWwindow *window) {
             ImGui::Separator();
 
             if (ImGui::Button("Start Simulation", ImVec2(380, 40))) {
-                loadSelectedCity();
+                loadSelectedCity(window);
             }
         }
         ImGui::End();
@@ -907,6 +916,8 @@ void render(GLFWwindow *window) {
             ImGui::Text("Update core");
             if (ImGui::Button("Pause/Unpause")) {
                 pauseUpdate = !pauseUpdate;
+                cursor_visible = pauseUpdate;
+                glfwSetInputMode(window, GLFW_CURSOR, cursor_visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
             }
 
             ImGui::Text("Label Display Mode");
