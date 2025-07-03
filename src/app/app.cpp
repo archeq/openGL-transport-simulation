@@ -17,6 +17,7 @@
 #include "LightSource.h"
 #include "Model.h"
 #include "RailroadMap.h"
+#include "Skybox.h"
 #include "TrainManager.h"
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -129,6 +130,7 @@ Texture boxTexture, boxSpecularMap, railTexture, stationTexture;
 Camera camera;
 Model trainModel;
 LightSource lightSource;
+// Skybox skybox;
 
 
 
@@ -181,6 +183,16 @@ void test_setup() {
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
 
+    // std::vector<std::string> faces = {
+    //     "../textures/skybox_right.png",
+    //     "../textures/skybox_left.png",
+    //     "../textures/skybox_top.png",
+    //     "../textures/skybox_bottom.png",
+    //     "../textures/skybox_front.png",
+    //     "../textures/skybox_back.png"
+    // };
+    // skybox.prepare(faces);
+
     // СНАЧАЛА инициализируем RailroadMap
     railroadMap.initialize(allPoints, routeIndices);
     railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
@@ -189,7 +201,9 @@ void test_setup() {
     std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
 
     // ЗАТЕМ создаем модель поезда
-    trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
+    // TODO: TRAIN MODEL LOAD
+    // trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
+    trainModelPtr = std::make_shared<Model>("../models/train_minimalistic/mini_train.obj");
     if (!trainModelPtr->is_loaded()) {
         std::cout << "ERROR:: Train model failed to load!" << std::endl;
     } else {
@@ -205,11 +219,6 @@ void test_setup() {
 
     // Настройки замедления у станций
     trainManager.setStationSlowdownSettings(8.0f, 0.99f);
-
-
-
-
-
 
 }
 
@@ -302,14 +311,13 @@ void render(GLFWwindow *window) {
     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // skybox
+    // skybox.draw(camera);
+
     // light
     lightSource.draw_as_cube(camera, 3);
 
-    // test model
-    // trainModel.draw(modelShader, camera, lightSource);
-
     // Добавляем отрисовку поездов через менеджер
-
     trainManager.draw(modelShader, camera, lightSource);
 
     // railroad
