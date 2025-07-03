@@ -153,7 +153,10 @@ public:
     }
 };
 
-
+enum class LabelDisplayMode {
+    STATIC,
+    DYNAMIC
+};
 
 class RailroadMap {
     std::vector<glm::vec3> allPoints; // Все точки
@@ -166,11 +169,13 @@ class RailroadMap {
     std::unique_ptr<Mesh> stationBoxMesh;
     std::unique_ptr<Mesh> stationSphereMesh;
 
+    LabelDisplayMode labelDisplayMode = LabelDisplayMode::STATIC;
+
+
     int railVerticesCount{}, stationVerticesCount{};
     unsigned int railTextureID = 0, stationTextureID = 0;
     unsigned int boxDiffuseTextureID = 0, boxSpecularTextureID = 0;
     bool boxTexturesLoaded = false;
-    bool showStationLabels = true; // Добавьте эту строку
 
     void createRailsMesh();
     void createStationsMesh();
@@ -180,6 +185,7 @@ class RailroadMap {
     void draw_stations(const Shader& shader);
 
 public:
+    bool showStationLabels = true;
     RailroadMap() = default;
     RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints);
     std::vector<glm::vec3> stations;
@@ -187,6 +193,13 @@ public:
     void setStationNames(const std::vector<std::string>& names);
     void drawStationLabels(const Camera& camera, int windowWidth, int windowHeight);
     void toggleStationLabels() { showStationLabels = !showStationLabels; }
+
+    void setLabelDisplayMode(LabelDisplayMode mode) { labelDisplayMode = mode; }
+    LabelDisplayMode getLabelDisplayMode() const { return labelDisplayMode; }
+    const char* getLabelDisplayModeString() const {
+        return labelDisplayMode == LabelDisplayMode::STATIC ? "Static" : "Dynamic";
+    }
+
     glm::vec2 worldToScreen(const glm::vec3& worldPos, const Camera& camera, int width, int height);
 
     void setPoints(const std::vector<glm::vec3>& points);
@@ -225,4 +238,6 @@ public:
     }
 
 };
+
+
 #endif // RAILROAD_MAP_H

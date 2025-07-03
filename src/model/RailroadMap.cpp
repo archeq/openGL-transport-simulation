@@ -594,6 +594,12 @@ void RailroadMap::drawStationLabels(const Camera& camera, int windowWidth, int w
     for (size_t i = 0; i < stations.size() && i < stationNames.size(); ++i) {
         glm::vec2 screenPos = worldToScreen(stations[i], camera, windowWidth, windowHeight);
 
+        // Проверяем режим отображения
+        if (labelDisplayMode == LabelDisplayMode::DYNAMIC) {
+            float distance = glm::distance(camera.position, stations[i]);
+            if (distance > 50.0f) continue; // Лейблы отображаются только если камера близко
+        }
+
         if (screenPos.x >= 0 && screenPos.x <= windowWidth &&
             screenPos.y >= 0 && screenPos.y <= windowHeight) {
 
@@ -604,7 +610,7 @@ void RailroadMap::drawStationLabels(const Camera& camera, int windowWidth, int w
 
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", stationNames[i].c_str());
             ImGui::End();
-            }
+        }
     }
 
     ImGui::PopStyleVar(2);

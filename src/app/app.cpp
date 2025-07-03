@@ -486,8 +486,21 @@ void render(GLFWwindow *window) {
 
     // GUI панель управления
     if (ImGui::Begin("Camera Control")) {
-        if (ImGui::Button("Toggle Station Labels")) {
-            railroadMap.toggleStationLabels();
+        // Добавляем выбор режима отображения лейблов
+        ImGui::Text("Label Display Mode");
+        if (ImGui::BeginCombo("##LabelDisplayMode", railroadMap.getLabelDisplayModeString())) {
+            if (ImGui::Selectable("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC)) {
+                railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
+                railroadMap.showStationLabels = true;
+            }
+            if (ImGui::Selectable("Dynamic", railroadMap.getLabelDisplayMode() == LabelDisplayMode::DYNAMIC)) {
+                railroadMap.setLabelDisplayMode(LabelDisplayMode::DYNAMIC);
+                railroadMap.showStationLabels = true;
+            }
+            if (ImGui::Selectable("Off", !railroadMap.showStationLabels)) {
+                railroadMap.showStationLabels = false;
+            }
+            ImGui::EndCombo();
         }
     }
     ImGui::End();
