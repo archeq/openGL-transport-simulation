@@ -45,6 +45,30 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
     std::cout << "[OpenGL Error](" << type << ") " << message << std::endl;
 }
 
+Shader simpleShader, lightSourceShader, modelShader;
+unsigned int VBO, cubeVAO, lightCubeVAO;
+
+Texture boxTexture, boxSpecularMap, railTexture, stationTexture;
+Camera camera;
+Model trainModel;
+LightSource lightSource;
+Skybox skybox;
+
+// Объявляем глобальную переменную railroadMap и routes
+RailroadMap railroadMap;
+TrainManager trainManager(railroadMap);
+std::shared_ptr<Model> trainModelPtr;
+
+// добавьте эти переменные в секцию глобальных переменных после других объявлений
+Texture groundTexture;
+unsigned int groundVAO, groundVBO;
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    if (camera.mode == FOLLOW) {
+        camera.follow_distance += static_cast<float>(yoffset);
+    }
+}
+
 void App::run() {
     // glfw initialization
     glfw_init();
@@ -52,6 +76,7 @@ void App::run() {
 
     // cursor
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad (openGL) initialization
@@ -113,25 +138,6 @@ GLFWwindow *App::window_init(int width, int height) {
     mouse_last_y = height / 2.0f;
     return window;
 }
-
-Shader simpleShader, lightSourceShader, modelShader;
-unsigned int VBO, cubeVAO, lightCubeVAO;
-
-Texture boxTexture, boxSpecularMap, railTexture, stationTexture;
-Camera camera;
-Model trainModel;
-LightSource lightSource;
-Skybox skybox;
-
-// Объявляем глобальную переменную railroadMap и routes
-RailroadMap railroadMap;
-TrainManager trainManager(railroadMap);
-std::shared_ptr<Model> trainModelPtr;
-
-// добавьте эти переменные в секцию глобальных переменных после других объявлений
-Texture groundTexture;
-unsigned int groundVAO, groundVBO;
-
 
 std::vector<std::string> faces = {
     "../textures/right.jpg",
@@ -260,7 +266,6 @@ void setup_ground() {
     // Загружаем текстуру земли
     groundTexture = Texture(std::string("../textures/dirt.jpg"));
 }
-
 
 void test_setup() {
     // Temporal function for TESTING only
