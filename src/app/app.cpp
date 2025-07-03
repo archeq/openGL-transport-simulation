@@ -10,7 +10,6 @@
 
 #include <Shader.h>
 #include <Texture.h>
-#include <Mesh.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "Camera.h"
@@ -33,6 +32,12 @@ float mouse_last_x;
 float mouse_last_y;
 bool firstMouse = true;
 
+bool error = false;
+
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    error = true;
+    std::cout << "[OpenGL Error](" << type << ") " << message << std::endl;
+}
 
 void App::run() {
     // glfw initialization
@@ -53,6 +58,10 @@ void App::run() {
 
     // viewport
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    // Enable debug output
+    // glEnable(GL_DEBUG_OUTPUT);
+    // glDebugMessageCallback(MessageCallback, 0);
 
     // running the loop
     loop();
@@ -101,38 +110,11 @@ GLFWwindow *App::window_init(int width, int height) {
 Shader simpleShader, lightSourceShader, modelShader;
 unsigned int VBO, cubeVAO, lightCubeVAO;
 
-
-// test box
-// glGenVertexArrays(1, &cubeVAO);
-// glGenBuffers(1, &VBO);
-//
-// glBindBuffer(GL_ARRAY_BUFFER, VBO);
-// glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_pnt), cube_vertices_pnt, GL_STATIC_DRAW);
-//
-// glBindVertexArray(cubeVAO);
-//
-// // position attribute
-// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
-// glEnableVertexAttribArray(0);
-//
-// // normal attribute
-// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-// glEnableVertexAttribArray(1);
-//
-// // texture attribute
-// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
-// glEnableVertexAttribArray(2);
-
-
-
-
 Texture boxTexture, boxSpecularMap, railTexture, stationTexture;
 Camera camera;
 Model trainModel;
 LightSource lightSource;
 Skybox skybox;
-
-
 
 // Объявляем глобальную переменную railroadMap и routes
 RailroadMap railroadMap;
@@ -191,6 +173,8 @@ void test_setup() {
         "../textures/skybox_front.png",
         "../textures/skybox_back.png"
     };
+
+    skybox = Skybox();
     skybox.prepare(faces);
 
     // СНАЧАЛА инициализируем RailroadMap
@@ -337,11 +321,8 @@ void App::loop() {
         deltaTime_s = currentFrame - lastFrame_s;
         lastFrame_s = currentFrame;
 
-
-
         // input
         process_input(window);
-
 
         // train
         trainManager.update(deltaTime_s);

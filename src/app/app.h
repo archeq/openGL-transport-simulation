@@ -4,6 +4,7 @@
 
 #ifndef APP_H
 #define APP_H
+
 #include "GLFW/glfw3.h"
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);

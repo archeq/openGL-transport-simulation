@@ -20,10 +20,10 @@ public:
 
 private:
     unsigned int texture;
+    unsigned int VAO, VBO;
     Shader shader;
 
 };
-
 
 
 #endif //SKYBOX_H
