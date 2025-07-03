@@ -24,6 +24,8 @@
 #include <vector>
 #include <string>
 
+#include "glm/gtx/transform.hpp"
+
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 900
@@ -58,6 +60,7 @@ void App::run() {
 
     // depth
     glEnable(GL_DEPTH_TEST);
+
 
     // viewport
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -124,6 +127,10 @@ RailroadMap railroadMap;
 TrainManager trainManager(railroadMap);
 std::shared_ptr<Model> trainModelPtr;
 
+// добавьте эти переменные в секцию глобальных переменных после других объявлений
+Texture groundTexture;
+unsigned int groundVAO, groundVBO;
+
 
 std::vector<std::string> faces = {
     "../textures/right.jpg",
@@ -163,6 +170,102 @@ std::vector<std::vector<int>> routeIndices = {
     {11, 12, 2, 8, 13, 14,},    // route 3
 };
 
+
+// добавьте эту функцию после функции draw_test_box
+void draw_ground(const Camera& camera, const LightSource& lightSource) {
+
+    // Включаем polygon offset для земли
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(1.0f, 1.0f); // Отодвигаем землю назад
+
+
+    // Используем тот же шейдер, что и для других объектов
+    simpleShader.use();
+
+    simpleShader.setBool("use_texture", true);
+
+
+    // Устанавливаем параметры освещения
+    simpleShader.setVec3("light.position", lightSource.position);
+    simpleShader.setVec3("viewPos", camera.position);
+
+    // Свойства света
+    simpleShader.setVec3("light.ambient", lightSource.ambient);
+    simpleShader.setVec3("light.diffuse", lightSource.diffuse);
+    simpleShader.setVec3("light.specular", lightSource.specular);
+
+    // Свойства материала
+    simpleShader.setFloat("material.shininess", 32.0f);
+
+    // Матрицы трансформации
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), WINDOW_RATIO, 0.1f, 1000.0f);
+    glm::mat4 view = camera.getViewMatrix();
+    glm::mat4 model = glm::mat4(1.0f);
+
+    // Масштабируем и позиционируем землю
+    model = glm::translate(model, glm::vec3(0.0f, -0.1f, 0.0f)); // Опускаем немного вниз
+    model = glm::scale(model, glm::vec3(1000.0f, 1.0f, 1000.0f)); // Делаем очень большой
+
+    simpleShader.setMat4("projection", projection);
+    simpleShader.setMat4("view", view);
+    simpleShader.setMat4("model", model);
+
+    // Привязываем текстуру земли
+    simpleShader.setInt("material.diffuse", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, groundTexture.id);
+
+    // Используем ту же текстуру для specular map (можно заменить на отдельную)
+    simpleShader.setInt("material.specular", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, groundTexture.id);
+
+    // Отрисовываем плоскость
+    glBindVertexArray(groundVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Отключаем polygon offset после отрисовки
+    glDisable(GL_POLYGON_OFFSET_FILL);
+}
+
+// добавьте эту функцию для инициализации геометрии земли
+void setup_ground() {
+    // Вершины для горизонтальной плоскости
+    float groundVertices[] = {
+        // Позиции          // Нормали         // Текстурные координаты
+        -0.5f,  0.0f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 100.0f, // Повторяем текстуру много раз
+        -0.5f,  0.0f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f,
+         0.5f,  0.0f,  0.5f,  0.0f, 1.0f, 0.0f,  100.0f, 0.0f,
+
+        -0.5f,  0.0f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 100.0f,
+         0.5f,  0.0f,  0.5f,  0.0f, 1.0f, 0.0f,  100.0f, 0.0f,
+         0.5f,  0.0f, -0.5f,  0.0f, 1.0f, 0.0f,  100.0f, 100.0f
+    };
+
+    // Создаем VBO и VAO для земли
+    glGenVertexArrays(1, &groundVAO);
+    glGenBuffers(1, &groundVBO);
+
+    glBindVertexArray(groundVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, groundVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(groundVertices), groundVertices, GL_STATIC_DRAW);
+
+    // Позиции
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Нормали
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Текстурные координаты
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // Загружаем текстуру земли
+    groundTexture = Texture(std::string("../textures/dirt.jpg"));
+}
 
 
 void test_setup() {
@@ -206,6 +309,7 @@ void test_setup() {
     // Настройки замедления у станций
     trainManager.setStationSlowdownSettings(8.0f, 0.99f);
 
+    setup_ground();
 }
 
 void App::process_input(GLFWwindow *window) const {
@@ -300,6 +404,9 @@ void render(GLFWwindow *window) {
     // skybox
     skybox.draw(camera);
 
+    // ground
+    draw_ground(camera, lightSource);
+
     // light
     lightSource.draw_as_cube(camera, 3);
 
@@ -308,8 +415,6 @@ void render(GLFWwindow *window) {
 
     // railroad
     railroadMap.draw(simpleShader, camera, lightSource);
-
-
 
 
     glUseProgram(0);
@@ -324,6 +429,8 @@ void App::loop() {
         const auto currentFrame = static_cast<float>(glfwGetTime());
         deltaTime_s = currentFrame - lastFrame_s;
         lastFrame_s = currentFrame;
+
+
 
         // input
         process_input(window);
