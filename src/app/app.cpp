@@ -36,6 +36,7 @@
 float mouse_last_x;
 float mouse_last_y;
 bool firstMouse = true;
+bool cursor_visible = false;
 
 bool error = false;
 
@@ -176,29 +177,22 @@ void draw_ground(const Camera& camera, const LightSource& lightSource) {
 
     // Включаем polygon offset для земли
     glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(1.0f, 1.0f); // Отодвигаем землю назад
+    // glPolygonOffset(1.0f, 1.0f); // Отодвигаем землю назад
 
 
     // Используем тот же шейдер, что и для других объектов
     simpleShader.use();
 
     simpleShader.setBool("use_texture", true);
-
-
-    // Устанавливаем параметры освещения
     simpleShader.setVec3("light.position", lightSource.position);
     simpleShader.setVec3("viewPos", camera.position);
-
-    // Свойства света
     simpleShader.setVec3("light.ambient", lightSource.ambient);
     simpleShader.setVec3("light.diffuse", lightSource.diffuse);
     simpleShader.setVec3("light.specular", lightSource.specular);
-
-    // Свойства материала
-    simpleShader.setFloat("material.shininess", 32.0f);
+    simpleShader.setFloat("material.shininess", 25.0f);
 
     // Матрицы трансформации
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), WINDOW_RATIO, 0.1f, 1000.0f);
+    glm::mat4 projection = camera.getProjectionMatrix();
     glm::mat4 view = camera.getViewMatrix();
     glm::mat4 model = glm::mat4(1.0f);
 
@@ -312,32 +306,47 @@ void test_setup() {
     setup_ground();
 }
 
+bool tab_previous = false;
 void App::process_input(GLFWwindow *window) const {
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.ProcessKeyboard(UP, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        camera.ProcessKeyboard(DOWN, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-        camera.ProcessKeyboard(KEY_1, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-        camera.ProcessKeyboard(KEY_2, deltaTime_s);
-    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-        camera.ProcessKeyboard(KEY_3, deltaTime_s);
+    if (!cursor_visible) {
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            camera.ProcessKeyboard(FORWARD, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            camera.ProcessKeyboard(BACKWARD, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            camera.ProcessKeyboard(LEFT, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            camera.ProcessKeyboard(RIGHT, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            camera.ProcessKeyboard(UP, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+            camera.ProcessKeyboard(DOWN, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+            camera.ProcessKeyboard(KEY_1, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+            camera.ProcessKeyboard(KEY_2, deltaTime_s);
+        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+            camera.ProcessKeyboard(KEY_3, deltaTime_s);
+    }
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
+        if (!tab_previous) {
+            cursor_visible = !cursor_visible;
+            tab_previous = true;
+        }
+        glfwSetInputMode(window, GLFW_CURSOR, cursor_visible ? GLFW_CURSOR_NORMAL: GLFW_CURSOR_DISABLED);
+    }
+    else {
+        tab_previous = false;
+    }
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+    if (cursor_visible) return;
+
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
