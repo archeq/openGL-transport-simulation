@@ -160,7 +160,6 @@ enum class LabelDisplayMode {
 };
 
 class RailroadMap {
-    std::vector<glm::vec3> allPoints; // Все точки
     std::vector<std::vector<int>> routeIndices; // Маршруты как индексы точек
     std::vector<CatmullRomSpline> routes;
     std::vector<std::string> stationNames; // Для хранения названий станций
@@ -204,6 +203,7 @@ class RailroadMap {
     void draw_stations(const Shader& shader);
 
 public:
+    std::vector<glm::vec3> allPoints; // Все точки
     bool showStationLabels = true;
     RailroadMap() = default;
     RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints);

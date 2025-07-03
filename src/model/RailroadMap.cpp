@@ -75,12 +75,10 @@ void RailroadMap::initialize(const std::vector<glm::vec3>& points, const std::ve
     routeIndices.clear();
 
     setPoints(points);
-    std::cout << "Initialized with " << points.size() << " points" << std::endl;
 
     // Сначала создаем все маршруты
     for (size_t i = 0; i < routeIndexArrays.size(); ++i) {
         const auto& routeIdx = routeIndexArrays[i];
-        std::cout << "Adding route " << i << " with " << routeIdx.size() << " point indices" << std::endl;
         addRoute(routeIdx);
     }
 

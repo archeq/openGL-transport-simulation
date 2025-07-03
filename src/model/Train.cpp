@@ -9,15 +9,32 @@
 
 void Train::update(float deltaTime) {
     if (speed <= 0.0f) return;
-
-    currentT += speed * deltaTime * 0.01f; // уменьшенный коэффициент
-
     const auto& route = railroadMap->getRoute(routeIndex);
+
+    // calculating the speed depending on the distance to the nearest station
+    float result_speed = speed;
+
+    // finding the nearest station
+    float startSlowingDistance = 7.0f;
+    float minSpeedPercent = 0.2f; // minimum speed percentage at the station
+    float minDistance = startSlowingDistance;
+    for (auto point: railroadMap->allPoints) {
+        float distance = glm::distance(point, position);
+        if (distance < minDistance) {
+            minDistance = distance;
+        }
+    }
+
+    float factor = (1-minSpeedPercent)*(minDistance / startSlowingDistance) + minSpeedPercent;
+    // slowing the speed down
+    result_speed = speed * factor;
+
+    currentT += result_speed * deltaTime * 0.01f; // rout progress in [0, 1]
     if (currentT >= 1.0f) {
         currentT = 0.0f;
         currentSegment++;
         if (currentSegment >= route.getSegmentCount()) {
-            currentSegment = 0; // зацикливаем маршрут
+            currentSegment = 0;
         }
     }
 

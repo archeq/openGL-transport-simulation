@@ -355,9 +355,9 @@ void test_setup(GLFWwindow* window) {
         trainModelPtr->rotation_deg = glm::vec3(0, 90, 0);
     }
 
-    trainManager.addTrain(trainModelPtr, 0, 15.0f);
-    trainManager.addTrain(trainModelPtr, 1, 15.0f);
-    trainManager.addTrain(trainModelPtr, 2, 15.0f);
+    trainManager.addTrain(trainModelPtr, 0, 25.0f);
+    trainManager.addTrain(trainModelPtr, 1, 25.0f);
+    trainManager.addTrain(trainModelPtr, 2, 25.0f);
 
     setup_ground();
 }
