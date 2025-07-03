@@ -45,6 +45,7 @@ add_executable(app
         src/model/Tunnel.cpp
         src/model/Tunnel.h
         "src/app/stations.h"
+        src/app/stones.h
 )
 
 target_link_libraries(app PRIVATE glfw assimp::assimp)

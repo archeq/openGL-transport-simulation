@@ -428,7 +428,7 @@ void RailroadMap::draw_station_spheres(const Shader& shader) {
         for (const auto& station : stations) {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, station);
-            model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0f)); // Поднимаем над землей
+            model = glm::translate(model, glm::vec3(0.0f, 1.1f, 0.0f)); // Поднимаем над землей
 
             shader.setMat4("model", model);
             stationSphereMesh->draw(shader);
@@ -585,7 +585,8 @@ void RailroadMap::drawStationLabels(const Camera& camera, int windowWidth, int w
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
     for (size_t i = 0; i < stations.size() && i < stationNames.size(); ++i) {
-        glm::vec2 screenPos = worldToScreen(stations[i], camera, windowWidth, windowHeight);
+        glm::vec3 labelPosition = stations[i] + glm::vec3(0.2f, 1.1f, 0.0f);
+        glm::vec2 screenPos = worldToScreen(labelPosition, camera, windowWidth, windowHeight);
 
         // Проверяем режим отображения
         if (labelDisplayMode == LabelDisplayMode::DYNAMIC) {
@@ -619,9 +620,9 @@ void RailroadMap::generateTunnels() {
     std::vector<IntersectionPoint> intersections = findIntersections();
 
     // 2. Создаем X-образные туннели для пересечений
-    for (const auto& intersection : intersections) {
-        generateXTunnel(intersection);
-    }
+    // for (const auto& intersection : intersections) {
+    //     generateXTunnel(intersection);
+    // }
 
     // 3. Создаем обычные туннели для участков без пересечений
     for (size_t i = 0; i < routes.size(); i++) {
@@ -651,7 +652,7 @@ void RailroadMap::generateTunnels() {
 
         if (routePoints.size() >= 2) {
             tunnels.emplace_back();
-            tunnels.back().initialize(routePoints, 3.0f, 8);
+            tunnels.back().initialize(routePoints, 1.6f, 8);
         }
     }
 
