@@ -42,6 +42,8 @@ add_executable(app
         include/imgui/imgui_widgets.cpp
         include/imgui/backends/imgui_impl_glfw.cpp
         include/imgui/backends/imgui_impl_opengl3.cpp
+        src/model/Tunnel.cpp
+        src/model/Tunnel.h
 )
 
 target_link_libraries(app PRIVATE glfw assimp::assimp)

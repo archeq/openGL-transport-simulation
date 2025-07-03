@@ -17,6 +17,7 @@
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
+#include "Tunnel.h"
 
 // Структура для хранения кривой Безье третьего порядка
 
@@ -177,6 +178,24 @@ class RailroadMap {
     unsigned int boxDiffuseTextureID = 0, boxSpecularTextureID = 0;
     bool boxTexturesLoaded = false;
 
+    std::vector<Tunnel> tunnels;
+    bool tunnelsGenerated = false;
+    // Новые методы
+    std::vector<glm::vec3> getAllRoutePoints();
+    std::vector<std::vector<glm::vec3>> getSegmentedRoutes();
+    bool arePointsClose(const glm::vec3& p1, const glm::vec3& p2, float threshold = 2.0f);
+    struct IntersectionPoint {
+        glm::vec3 position;
+        std::vector<size_t> routeIndices; // Какие маршруты пересекаются
+        float radius;
+    };
+
+    std::vector<IntersectionPoint> findIntersections();
+    void generateXTunnel(const IntersectionPoint& intersection);
+    bool areRoutesIntersecting(size_t route1, size_t route2, glm::vec3& intersectionPoint);
+    bool showTunnels = false; // Флаг для отображения туннелей
+
+
     void createRailsMesh();
     void createStationsMesh();
     void createStationBoxMesh();
@@ -231,6 +250,12 @@ public:
     bool loadStationBoxTextures(const std::string& diffuseTexturePath, const std::string& specularTexturePath);
 
     void draw(const Shader &shader, const Camera &camera, const LightSource &lightSource);
+
+    void generateTunnels();
+    void drawTunnels(const Shader& shader, bool transparent = false);
+    bool loadTunnelTextures(const std::string& texturePath);
+    void setShowTunnels(bool show) { showTunnels = show; }
+    bool getShowTunnels() const { return showTunnels; }
 
     [[nodiscard]] unsigned int getRailTextureID() const { return railTextureID; }
     [[nodiscard]] unsigned int getStationTextureID() const { return stationTextureID; }

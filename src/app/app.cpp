@@ -657,6 +657,21 @@ void render(GLFWwindow *window) {
     // light
     lightSource.draw_as_cube(camera, 3);
 
+    // Настройка шейдера для освещения
+    simpleShader.use();
+    simpleShader.setMat4("projection", camera.getProjectionMatrix());
+    simpleShader.setMat4("view", camera.getViewMatrix());
+    simpleShader.setMat4("model", glm::mat4(1.0f));
+    simpleShader.setVec3("light.position", lightSource.position);
+    simpleShader.setVec3("viewPos", camera.position);
+    simpleShader.setVec3("light.ambient", lightSource.ambient);
+    simpleShader.setVec3("light.diffuse", lightSource.diffuse);
+    simpleShader.setVec3("light.specular", lightSource.specular);
+
+    // Туннели (прозрачные в free camera режиме)
+    bool transparentTunnels = freeCameraMode;
+    railroadMap.drawTunnels(simpleShader, transparentTunnels);
+
     // Добавляем отрисовку поездов через менеджер
     trainManager.draw(modelShader, camera, lightSource);
 
@@ -691,6 +706,14 @@ void render(GLFWwindow *window) {
 
         if (ImGui::RadioButton("Off", !railroadMap.showStationLabels)) {
             railroadMap.showStationLabels = false;
+        }
+
+        ImGui::Separator();
+
+        // Добавляем контроль туннелей
+        bool showTunnels = railroadMap.getShowTunnels();
+        if (ImGui::Checkbox("Show Tunnels", &showTunnels)) {
+            railroadMap.setShowTunnels(showTunnels);
         }
 
         ImGui::Separator();

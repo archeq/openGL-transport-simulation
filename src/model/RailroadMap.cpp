@@ -616,3 +616,172 @@ void RailroadMap::drawStationLabels(const Camera& camera, int windowWidth, int w
     ImGui::PopStyleVar(2);
     ImGui::PopStyleColor();
 }
+
+void RailroadMap::generateTunnels() {
+    if (tunnelsGenerated) return;
+
+    tunnels.clear();
+
+    // 1. Находим все пересечения маршрутов
+    std::vector<IntersectionPoint> intersections = findIntersections();
+
+    // 2. Создаем X-образные туннели для пересечений
+    for (const auto& intersection : intersections) {
+        generateXTunnel(intersection);
+    }
+
+    // 3. Создаем обычные туннели для участков без пересечений
+    for (size_t i = 0; i < routes.size(); i++) {
+        std::vector<glm::vec3> routePoints;
+        const auto& route = routes[i];
+
+        for (int segment = 0; segment < route.getSegmentCount(); ++segment) {
+            const int steps = 10;
+            for (int j = 0; j < steps; ++j) {
+                float t = j / (float)steps;
+                glm::vec3 point = route.getPoint(segment, t);
+
+                // Проверяем, не находится ли точка рядом с пересечением
+                bool nearIntersection = false;
+                for (const auto& intersection : intersections) {
+                    if (glm::distance(point, intersection.position) < intersection.radius * 1.5f) {
+                        nearIntersection = true;
+                        break;
+                    }
+                }
+
+                if (!nearIntersection) {
+                    routePoints.push_back(point);
+                }
+            }
+        }
+
+        if (routePoints.size() >= 2) {
+            tunnels.emplace_back();
+            tunnels.back().initialize(routePoints, 3.0f, 8);
+        }
+    }
+
+    tunnelsGenerated = true;
+    std::cout << "Generated " << tunnels.size() << " tunnels with " << intersections.size() << " X-intersections" << std::endl;
+}
+
+std::vector<RailroadMap::IntersectionPoint> RailroadMap::findIntersections() {
+    std::vector<IntersectionPoint> intersections;
+    const float intersectionThreshold = 2.0f; // Минимальное расстояние для считания пересечением
+
+    // Проверяем все пары маршрутов
+    for (size_t i = 0; i < routes.size(); i++) {
+        for (size_t j = i + 1; j < routes.size(); j++) {
+            glm::vec3 intersectionPoint;
+            if (areRoutesIntersecting(i, j, intersectionPoint)) {
+
+                // Проверяем, есть ли уже пересечение рядом
+                bool foundExisting = false;
+                for (auto& existing : intersections) {
+                    if (glm::distance(existing.position, intersectionPoint) < intersectionThreshold) {
+                        existing.routeIndices.push_back(j);
+                        foundExisting = true;
+                        break;
+                    }
+                }
+
+                if (!foundExisting) {
+                    IntersectionPoint newIntersection;
+                    newIntersection.position = intersectionPoint;
+                    newIntersection.routeIndices = {i, j};
+                    newIntersection.radius = 5.0f; // Радиус X-образного туннеля
+                    intersections.push_back(newIntersection);
+                }
+            }
+        }
+    }
+
+    return intersections;
+}
+
+bool RailroadMap::areRoutesIntersecting(size_t route1, size_t route2, glm::vec3& intersectionPoint) {
+    const auto& r1 = routes[route1];
+    const auto& r2 = routes[route2];
+    const float maxDistance = 3.0f; // Максимальное расстояние для считания пересечением
+
+    // Проверяем все точки первого маршрута против всех точек второго
+    for (int seg1 = 0; seg1 < r1.getSegmentCount(); ++seg1) {
+        for (int i = 0; i < 20; i++) {
+            float t1 = i / 20.0f;
+            glm::vec3 point1 = r1.getPoint(seg1, t1);
+
+            for (int seg2 = 0; seg2 < r2.getSegmentCount(); ++seg2) {
+                for (int j = 0; j < 20; j++) {
+                    float t2 = j / 20.0f;
+                    glm::vec3 point2 = r2.getPoint(seg2, t2);
+
+                    float distance = glm::distance(point1, point2);
+                    if (distance < maxDistance) {
+                        intersectionPoint = (point1 + point2) * 0.5f; // Средняя точка
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+void RailroadMap::generateXTunnel(const IntersectionPoint& intersection) {
+    // Создаем сферический туннель в точке пересечения
+    std::vector<glm::vec3> spherePoints;
+    const float radius = intersection.radius;
+    const int segments = 16; // Количество точек для создания сферической формы
+
+    glm::vec3 center = intersection.position;
+
+    // Создаем точки вокруг центра пересечения для сферической формы
+    for (int i = 0; i < segments; ++i) {
+        float angle = (2.0f * glm::pi<float>() * i) / segments;
+        glm::vec3 point = center + glm::vec3(
+            radius * 0.5f * cos(angle),
+            0.0f, // Держим на том же уровне
+            radius * 0.5f * sin(angle)
+        );
+        spherePoints.push_back(point);
+    }
+
+    // Добавляем центральную точку для замыкания
+    spherePoints.push_back(center);
+
+    if (spherePoints.size() >= 2) {
+        tunnels.emplace_back();
+        tunnels.back().initialize(spherePoints, radius, 12);
+    }
+}
+
+
+void RailroadMap::drawTunnels(const Shader& shader, bool transparent) {
+    if (!showTunnels) {
+        return; // Не рисуем туннели, если они отключены
+    }
+
+    if (!tunnelsGenerated) {
+        generateTunnels();
+    }
+
+    for (auto& tunnel : tunnels) {
+        tunnel.draw(shader, transparent);
+    }
+}
+
+bool RailroadMap::loadTunnelTextures(const std::string& texturePath) {
+    if (!tunnelsGenerated) {
+        std::cout << "Tunnels not generated yet!" << std::endl;
+        return false;
+    }
+
+    bool success = true;
+    for (auto& tunnel : tunnels) {
+        tunnel.loadTexture(texturePath);
+    }
+
+    return success;
+}
