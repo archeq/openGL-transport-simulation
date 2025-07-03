@@ -6,17 +6,11 @@
 #include "Train.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
-#include <glm/gtx/transform.hpp>
-#include <iostream>
 
 void Train::update(float deltaTime) {
     if (speed <= 0.0f) return;
 
-    checkStationSlowdown();
-
-
-    float moveSpeed = isSlowingDown ? slowdownSpeed : originalSpeed;
-    currentT += moveSpeed * deltaTime * 0.01f; // уменьшенный коэффициент
+    currentT += speed * deltaTime * 0.01f; // уменьшенный коэффициент
 
     const auto& route = railroadMap->getRoute(routeIndex);
     if (currentT >= 1.0f) {
@@ -56,27 +50,6 @@ void Train::updatePosition() {
     if (model) {
         model->position = position;
         model->rotation_deg = rotation;
-    }
-}
-
-
-void Train::checkStationSlowdown() {
-    // Проверяем расстояние до ближайших станций
-    bool nearStation = false;
-    for (const auto& station : railroadMap->stations) {
-        float distance = glm::length(position - station);
-        if (distance < slowdownRadius) {
-            nearStation = true;
-            break;
-        }
-    }
-
-    if (nearStation && !isSlowingDown) {
-        speed = slowdownSpeed;
-        isSlowingDown = true;
-    } else if (!nearStation && isSlowingDown) {
-        speed = originalSpeed;
-        isSlowingDown = false;
     }
 }
 

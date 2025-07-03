@@ -23,10 +23,7 @@ void TrainManager::addTrain(std::shared_ptr<Model> model, int routeIndex, float 
     try {
         auto trainModel = std::make_shared<Model>(*model);
         auto train = std::make_unique<Train>(trainModel, routeIndex, speed, &railroadMap);
-
         train->setSpeed(speed);
-        train->setStationSlowdownDistance(stationSlowdownDistance);
-        train->setStationSlowdownFactor(stationSlowdownFactor);
 
         trains.push_back(std::move(train));
         std::cout << "Added train to route " << routeIndex << " with speed " << speed << std::endl;
@@ -47,38 +44,10 @@ void TrainManager::draw(const Shader& shader, const Camera& camera, const LightS
     }
 }
 
-void TrainManager::pauseAll() {
-    for (auto& train : trains) {
-        train->pause();
-    }
-}
-
-void TrainManager::resumeAll() {
-    for (auto& train : trains) {
-        train->resume();
-    }
-}
-
-void TrainManager::resetAll() {
-    for (auto& train : trains) {
-        train->reset();
-    }
-}
-
 void TrainManager::setGlobalSpeed(float speed) {
     globalSpeedMultiplier = speed;
     for (auto& train : trains) {
         train->setSpeed(train->getCurrentSpeed() * speed);
-    }
-}
-
-void TrainManager::setStationSlowdownSettings(float distance, float factor) {
-    stationSlowdownDistance = distance;
-    stationSlowdownFactor = factor;
-
-    for (auto& train : trains) {
-        train->setStationSlowdownDistance(distance);
-        train->setStationSlowdownFactor(factor);
     }
 }
 

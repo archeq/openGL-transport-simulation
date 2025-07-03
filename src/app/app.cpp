@@ -346,8 +346,8 @@ void test_setup(GLFWwindow* window) {
 
     // ЗАТЕМ создаем модель поезда
     // TODO: TRAIN MODEL LOAD
-    trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
-    // trainModelPtr = std::make_shared<Model>("../models/train_minimalistic/mini_train.obj");
+    // trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
+    trainModelPtr = std::make_shared<Model>("../models/train_minimalistic/mini_train.obj");
     if (!trainModelPtr->is_loaded()) {
         std::cout << "ERROR:: Train model failed to load!" << std::endl;
     } else {
@@ -355,14 +355,9 @@ void test_setup(GLFWwindow* window) {
         trainModelPtr->rotation_deg = glm::vec3(0, 90, 0);
     }
 
-    // ТОЛЬКО ПОСЛЕ этого добавляем поезда
-    // Добавляем поезда на разные маршруты
-    trainManager.addTrain(trainModelPtr, 0, 15.0f);  // Маршрут 0, скорость 15
-    trainManager.addTrain(trainModelPtr, 1, 15.0f);  // Маршрут 1, скорость 15
-    trainManager.addTrain(trainModelPtr, 2, 15.0f);  // Маршрут 2, скорость 15
-
-    // Настройки замедления у станций
-    trainManager.setStationSlowdownSettings(8.0f, 0.99f);
+    trainManager.addTrain(trainModelPtr, 0, 15.0f);
+    trainManager.addTrain(trainModelPtr, 1, 15.0f);
+    trainManager.addTrain(trainModelPtr, 2, 15.0f);
 
     setup_ground();
 }

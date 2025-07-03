@@ -13,14 +13,11 @@
 #include "RailroadMap.h"
 
 class Train {
-private:
     std::shared_ptr<Model> model;
     int routeIndex;
     int currentSegment;
     float currentT;
     float speed;
-    bool isSlowingDown;
-    float originalSpeed;
     glm::vec3 position;
     glm::vec3 rotation;
 
@@ -29,7 +26,7 @@ private:
 public:
     Train(std::shared_ptr<Model> trainModel, int route, float trainSpeed, const RailroadMap* map)
         : model(trainModel), routeIndex(route), currentSegment(0), currentT(0.0f),
-          speed(trainSpeed), isSlowingDown(false), originalSpeed(trainSpeed),
+          speed(trainSpeed),
           position(0.0f), rotation(0.0f), railroadMap(map) {
 
         if (!railroadMap) {
@@ -47,22 +44,9 @@ public:
     void draw(const Shader& shader, const Camera& camera, const LightSource& lightSource);
     void setSlowdownSettings(float slowdownSpeed, float slowdownRadius);
     void Train::checkStationSlowdown();
-    void setSpeed(float newSpeed) { speed = newSpeed; originalSpeed = newSpeed; }
+    void setSpeed(float newSpeed) { speed = newSpeed; }
     float getCurrentSpeed() const { return speed; }
     glm::vec3 getPosition() const { return position; }
-    void setStationSlowdownDistance(float distance) { slowdownRadius = distance; }
-    void setStationSlowdownFactor(float factor) { slowdownSpeed = originalSpeed * factor; }
-    void pause() { speed = 0.0f; }
-    void resume() { speed = originalSpeed; }
-    void reset() {
-        currentSegment = 0;
-        currentT = 0.0f;
-        speed = originalSpeed;
-        isSlowingDown = false;
-        updatePosition();
-    }
-
-
 
 private:
     void updatePosition();
