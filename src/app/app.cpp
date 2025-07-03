@@ -126,12 +126,12 @@ std::shared_ptr<Model> trainModelPtr;
 
 
 std::vector<std::string> faces = {
-    "../textures/skybox_right.png",
-    "../textures/skybox_left.png",
-    "../textures/skybox_top.png",
-    "../textures/skybox_bottom.png",
-    "../textures/skybox_front.png",
-    "../textures/skybox_back.png"
+    "../textures/right.jpg",
+    "../textures/left.jpg",
+    "../textures/top.jpg",
+    "../textures/bottom.jpg",
+    "../textures/front.jpg",
+    "../textures/back.jpg"
 };
 
 std::vector<glm::vec3> allPoints = {
