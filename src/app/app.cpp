@@ -174,7 +174,7 @@ void test_setup() {
         "../textures/skybox_back.png"
     };
 
-    skybox = Skybox();
+    // skybox = Skybox();
     skybox.prepare(faces);
 
     // СНАЧАЛА инициализируем RailroadMap
