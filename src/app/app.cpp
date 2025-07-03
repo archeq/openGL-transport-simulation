@@ -176,17 +176,10 @@ void test_setup() {
     boxTexture = Texture(std::string("../textures/container.png"));
     boxSpecularMap = Texture(std::string("../textures/container2_specular.png"));
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
-    lightSource = LightSource(glm::vec3(0.0f, 10.0f, 0.0f),
+    lightSource = LightSource(glm::vec3(0.0f, 50.0f, 0.0f),
                         glm::vec3(0.5f, 0.5f, 0.5f),
                          glm::vec3(0.5f, 0.5f, 0.5f),
                         glm::vec3(1.0f, 1.0f, 1.0f));
-
-    // trainModel = Model("../models/train/Intercity 125 Executive Livery With Buffers.obj");
-    // if (!trainModel.is_loaded()) {
-    //     std::cout << "ERROR:: Train model failed to load!" << std::endl;
-    // }
-    // trainModel.scale = glm::vec3(0.12);
-    // trainModel.rotation_deg = glm::vec3(0, 90, 0);
 
     // СНАЧАЛА инициализируем RailroadMap
     railroadMap.initialize(allPoints, routeIndices);
@@ -310,7 +303,7 @@ void render(GLFWwindow *window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // light
-    lightSource.draw_as_cube(camera, 0.5);
+    lightSource.draw_as_cube(camera, 3);
 
     // test model
     // trainModel.draw(modelShader, camera, lightSource);
