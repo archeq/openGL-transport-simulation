@@ -50,6 +50,7 @@ public:
     void Train::checkStationSlowdown();
     void setSpeed(float newSpeed) { speed = newSpeed; originalSpeed = newSpeed; }
     float getCurrentSpeed() const { return speed; }
+    glm::vec3 getPosition() const { return position; }
     void setStationSlowdownDistance(float distance) { slowdownRadius = distance; }
     void setStationSlowdownFactor(float factor) { slowdownSpeed = originalSpeed * factor; }
     void pause() { speed = 0.0f; }

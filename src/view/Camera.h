@@ -21,6 +21,11 @@ enum Camera_actions {
     KEY_3,
 };
 
+enum Camera_modes {
+    FREE,
+    FOLLOW,
+};
+
 class Camera {
 public:
     glm::vec3 position;
@@ -36,6 +41,10 @@ public:
     float near_distance = 0.1f;
     float far_distance = 200.0f;
     float ratio;
+    Camera_modes mode = FREE; // default camera mode'
+    glm::vec3 target_position; // target to follow
+    float follow_distance = 3.0f; // distance from the target in FOLLOW mode
+    void update();
 
     // constructor with vectors
     explicit Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
