@@ -42,6 +42,112 @@ bool cursor_visible = false;
 bool error = false;
 bool pauseUpdate = true;
 
+// Добавьте в начало файла app.cpp после включений
+struct City {
+    std::string name;
+    std::vector<glm::vec3> points;
+    std::vector<std::vector<int>> routeIndices;
+    std::vector<std::string> stationNames;
+
+    City(const std::string& cityName,
+         const std::vector<glm::vec3>& cityPoints,
+         const std::vector<std::vector<int>>& cityRoutes,
+         const std::vector<std::string>& cityStations)
+        : name(cityName), points(cityPoints), routeIndices(cityRoutes), stationNames(cityStations) {}
+};
+
+std::vector<City> cities;
+size_t selectedCityIndex = 0;
+bool showMainMenu = true;
+bool citySelected = false;
+
+void initializeCities() {
+    // Город 1 - существующий Gavnar
+    std::vector<glm::vec3> gavnarPoints = {
+        glm::vec3(-60.0f, 0.0f, 51.0f),   // A (0)
+        glm::vec3(-30.0f, 0.0f, 45.0f),   // B (1)
+        glm::vec3(-5.0f, 0.0f, 30.0f),    // C (2)
+        glm::vec3(35.0f, 0.0f, -10.0f),   // D (3)
+        glm::vec3(110.0f, 0.0f, -15.0f),  // E (4)
+        glm::vec3(150.0f, 0.0f, 40.0f),   // F (5)
+        glm::vec3(-115.0f, 0.0f, -45.0f), // G (6)
+        glm::vec3(-70.0f, 0.0f, -55.0f),  // H (7)
+        glm::vec3(-20.0f, 0.0f, -25.0f),  // I (8)
+        glm::vec3(75.0f, 0.0f, 45.0f),    // J (9)
+        glm::vec3(130.0f, 0.0f, 75.0f),   // K (10)
+        glm::vec3(60.0f, 0.0f, 125.0f),   // L (11)
+        glm::vec3(30.0f, 0.0f, 85.0f),    // M (12)
+        glm::vec3(-15.0f, 0.0f, -105.0f), // N (13)
+        glm::vec3(-60.0f, 0.0f, -160.0f), // O (14)
+    };
+
+    std::vector<std::vector<int>> gavnarRoutes = {
+        {0, 1, 2, 3, 4, 5},
+        {6, 7, 8, 3, 9, 10},
+        {11, 12, 2, 8, 13, 14},
+    };
+
+    std::vector<std::string> gavnarStations = {
+        "Gavnar", "North Terminal", "East Junction", "South Gate", "West End",
+        "Final Stop", "Industrial Park", "Riverside", "Mountain View",
+        "Green Park", "UAM (kazn perdezhom)", "Sports Complex",
+        "Theater District", "Museum Quarter", "Airport Terminal"
+    };
+
+    // Город 2 - новый Metro City
+    std::vector<glm::vec3> metroPoints = {
+        glm::vec3(-80.0f, 0.0f, 80.0f),   // 0
+        glm::vec3(0.0f, 0.0f, 90.0f),     // 1
+        glm::vec3(80.0f, 0.0f, 60.0f),    // 2
+        glm::vec3(100.0f, 0.0f, 0.0f),    // 3
+        glm::vec3(60.0f, 0.0f, -80.0f),   // 4
+        glm::vec3(-20.0f, 0.0f, -100.0f), // 5
+        glm::vec3(-90.0f, 0.0f, -40.0f),  // 6
+        glm::vec3(-70.0f, 0.0f, 20.0f),   // 7
+        glm::vec3(20.0f, 0.0f, 40.0f),    // 8
+        glm::vec3(40.0f, 0.0f, -20.0f),   // 9
+    };
+
+    std::vector<std::vector<int>> metroRoutes = {
+        {0, 1, 2, 3},
+        {4, 5, 6, 7},
+        {8, 9, 3, 5},
+    };
+
+    std::vector<std::string> metroStations = {
+        "Metro Center", "North Plaza", "East Tower", "Commerce Hub",
+        "South Port", "Industrial Zone", "West Quarter", "Park Avenue",
+        "City Square", "Business District"
+    };
+
+    // Город 3 - Valley Network
+    std::vector<glm::vec3> valleyPoints = {
+        glm::vec3(-120.0f, 0.0f, 0.0f),   // 0
+        glm::vec3(-60.0f, 0.0f, 40.0f),   // 1
+        glm::vec3(0.0f, 0.0f, 20.0f),     // 2
+        glm::vec3(60.0f, 0.0f, 60.0f),    // 3
+        glm::vec3(120.0f, 0.0f, 20.0f),   // 4
+        glm::vec3(80.0f, 0.0f, -40.0f),   // 5
+        glm::vec3(20.0f, 0.0f, -80.0f),   // 6
+        glm::vec3(-40.0f, 0.0f, -60.0f),  // 7
+    };
+
+    std::vector<std::vector<int>> valleyRoutes = {
+        {0, 1, 2, 3, 4},
+        {5, 6, 7, 0},
+    };
+
+    std::vector<std::string> valleyStations = {
+        "Valley Station", "Mountain View", "Central Valley",
+        "Highland Park", "East Ridge", "Canyon Point",
+        "River Crossing", "West Valley"
+    };
+
+    cities.emplace_back("Gavnar", gavnarPoints, gavnarRoutes, gavnarStations);
+    cities.emplace_back("Metro City", metroPoints, metroRoutes, metroStations);
+    cities.emplace_back("Valley Network", valleyPoints, valleyRoutes, valleyStations);
+}
+
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
     error = true;
     std::cout << "[OpenGL Error](" << type << ") " << message << std::endl;
@@ -218,6 +324,34 @@ std::vector<std::string> stationNames = {
     "Airport Terminal"       // Станция 14 (вместо "Аэропорт")
 };
 
+void loadSelectedCity() {
+    if (selectedCityIndex >= cities.size()) return;
+
+    const City& city = cities[selectedCityIndex];
+
+    // Инициализируем RailroadMap с данными выбранного города
+    railroadMap.initialize(city.points, city.routeIndices);
+    railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
+    railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
+    railroadMap.setStationNames(city.stationNames);
+
+    std::cout << "Loaded city: " << city.name << std::endl;
+    std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
+
+    // Очищаем существующие поезда и добавляем новые
+    trainManager.~TrainManager(); // Явно вызываем деструктор
+    new (&trainManager) TrainManager(railroadMap); // Placement new для пересоздания объекта
+
+    // Добавляем поезда для каждого маршрута (если есть)
+    size_t routeCount = railroadMap.getRouteCount();
+    for (size_t i = 0; i < routeCount; ++i) {
+        trainManager.addTrain(trainModelPtr, i, 25.0f);
+    }
+
+    citySelected = true;
+    showMainMenu = false;
+}
+
 // добавьте эту функцию после функции draw_test_box
 void draw_ground(const Camera& camera, const LightSource& lightSource) {
 
@@ -334,16 +468,19 @@ void test_setup(GLFWwindow* window) {
                         glm::vec3(1.0f, 1.0f, 1.0f));
     skybox.prepare(faces);
 
-    // СНАЧАЛА инициализируем RailroadMap
-    railroadMap.initialize(allPoints, routeIndices);
-    railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
-    railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
+    // Инициализируем города
+    initializeCities();
 
-
-
-    railroadMap.setStationNames(stationNames);
-
-    std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
+    // // СНАЧАЛА инициализируем RailroadMap
+    // railroadMap.initialize(allPoints, routeIndices);
+    // railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
+    // railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
+    //
+    //
+    //
+    // railroadMap.setStationNames(stationNames);
+    //
+    // std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
 
     // ЗАТЕМ создаем модель поезда
     // TODO: TRAIN MODEL LOAD
@@ -643,115 +780,195 @@ void draw_stones(const Shader &shader, const Camera &camera, const LightSource &
     }
 }
 
+// void render(GLFWwindow *window) {
+//     // 1) temporal function for TESTING only
+//     // 2) there's nothing more permanent than a temporary solution
+//     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
+//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//
+//     // ImGui frame
+//     ImGui_ImplOpenGL3_NewFrame();
+//     ImGui_ImplGlfw_NewFrame();
+//     ImGui::NewFrame();
+//
+//     // skybox
+//     skybox.draw(camera);
+//
+//     // ground
+//     draw_ground(camera, lightSource);
+//
+//     // light
+//     lightSource.draw_as_cube(camera, 3);
+//
+//     // Настройка шейдера для освещения
+//     simpleShader.use();
+//     simpleShader.setMat4("projection", camera.getProjectionMatrix());
+//     simpleShader.setMat4("view", camera.getViewMatrix());
+//     simpleShader.setMat4("model", glm::mat4(1.0f));
+//     simpleShader.setVec3("light.position", lightSource.position);
+//     simpleShader.setVec3("viewPos", camera.position);
+//     simpleShader.setVec3("light.ambient", lightSource.ambient);
+//     simpleShader.setVec3("light.diffuse", lightSource.diffuse);
+//     simpleShader.setVec3("light.specular", lightSource.specular);
+//
+//     // Туннели (прозрачные в free camera режиме)
+//     bool transparentTunnels = freeCameraMode;
+//     railroadMap.drawTunnels(simpleShader, transparentTunnels);
+//
+//     // Добавляем отрисовку поездов через менеджер
+//     trainManager.draw(modelShader, camera, lightSource);
+//
+//     // stones
+//     draw_stones(simpleShader, camera, lightSource);
+//
+//     // railroad
+//     railroadMap.draw(simpleShader, camera, lightSource);
+//
+//
+//
+//     // Этикетки станций
+//     railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
+//
+//     // GUI панель управления
+//     // GUI панель управления (замените существующий блок ImGui)
+//
+//
+//     // Рендеринг ImGui
+//     ImGui::Render();
+//     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+//
+//
+//     glUseProgram(0);
+//     glfwSwapBuffers(window);
+// }
+
 void render(GLFWwindow *window) {
-    // 1) temporal function for TESTING only
-    // 2) there's nothing more permanent than a temporary solution
     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // skybox
-    skybox.draw(camera);
-
-    // ground
-    draw_ground(camera, lightSource);
-
-    // light
-    lightSource.draw_as_cube(camera, 3);
-
-    // Настройка шейдера для освещения
-    simpleShader.use();
-    simpleShader.setMat4("projection", camera.getProjectionMatrix());
-    simpleShader.setMat4("view", camera.getViewMatrix());
-    simpleShader.setMat4("model", glm::mat4(1.0f));
-    simpleShader.setVec3("light.position", lightSource.position);
-    simpleShader.setVec3("viewPos", camera.position);
-    simpleShader.setVec3("light.ambient", lightSource.ambient);
-    simpleShader.setVec3("light.diffuse", lightSource.diffuse);
-    simpleShader.setVec3("light.specular", lightSource.specular);
-
-    // Туннели (прозрачные в free camera режиме)
-    bool transparentTunnels = freeCameraMode;
-    railroadMap.drawTunnels(simpleShader, transparentTunnels);
-
-    // Добавляем отрисовку поездов через менеджер
-    trainManager.draw(modelShader, camera, lightSource);
-
-    // stones
-    draw_stones(simpleShader, camera, lightSource);
-
-    // railroad
-    railroadMap.draw(simpleShader, camera, lightSource);
 
     // ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    // Этикетки станций
-    railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
+    // Главное меню выбора города
+    if (showMainMenu) {
+        // Центрируем окно
+        ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * 0.5f),
+                               ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(400, 300));
 
-    // GUI панель управления
-    // GUI панель управления (замените существующий блок ImGui)
-    if (ImGui::Begin("Camera Control")) {
-        ImGui::Text("Update core");
-        if (ImGui::Button("pause")) {
-            pauseUpdate = !pauseUpdate;
-        }
+        if (ImGui::Begin("Select City", nullptr,
+                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                        ImGuiWindowFlags_NoCollapse)) {
 
-        ImGui::Text("Label Display Mode");
+            ImGui::Text("Choose a city to explore:");
+            ImGui::Separator();
 
-        if (ImGui::RadioButton("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC && railroadMap.showStationLabels)) {
-            railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
-            railroadMap.showStationLabels = true;
-        }
-
-        if (ImGui::RadioButton("Dynamic", railroadMap.getLabelDisplayMode() == LabelDisplayMode::DYNAMIC && railroadMap.showStationLabels)) {
-            railroadMap.setLabelDisplayMode(LabelDisplayMode::DYNAMIC);
-            railroadMap.showStationLabels = true;
-        }
-
-        if (ImGui::RadioButton("Off", !railroadMap.showStationLabels)) {
-            railroadMap.showStationLabels = false;
-        }
-
-        ImGui::Separator();
-
-        // Добавляем контроль туннелей
-        bool showTunnels = railroadMap.getShowTunnels();
-        if (ImGui::Checkbox("Show Tunnels", &showTunnels)) {
-            railroadMap.setShowTunnels(showTunnels);
-        }
-
-        ImGui::Separator();
-        ImGui::Text("Camera Mode");
-
-        if (ImGui::RadioButton("Free Camera", freeCameraMode)) {
-            freeCameraMode = true;
-            camera.mode = FREE;
-        }
-
-        if (ImGui::RadioButton("Follow Train", !freeCameraMode)) {
-            freeCameraMode = false;
-            camera.mode = FOLLOW;
-        }
-
-        if (!freeCameraMode) {
-            ImGui::Text("Select Train to Follow:");
-            size_t trainCount = trainManager.getTrainCount();
-            for (size_t i = 0; i < trainCount; i++) {
-                std::string trainLabel = "Train " + std::to_string(i + 1);
-                if (ImGui::RadioButton(trainLabel.c_str(), selectedTrainIndex == i)) {
-                    selectedTrainIndex = i;
+            for (size_t i = 0; i < cities.size(); ++i) {
+                if (ImGui::RadioButton(cities[i].name.c_str(), selectedCityIndex == i)) {
+                    selectedCityIndex = i;
                 }
+                ImGui::Spacing();
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Start Simulation", ImVec2(380, 40))) {
+                loadSelectedCity();
             }
         }
-    }
-    ImGui::End();
+        ImGui::End();
+    } else {
+        // Обычная отрисовка сцены
+        skybox.draw(camera);
+        draw_ground(camera, lightSource);
+        lightSource.draw_as_cube(camera, 3);
 
-    // Рендеринг ImGui
+        simpleShader.use();
+        simpleShader.setMat4("projection", camera.getProjectionMatrix());
+        simpleShader.setMat4("view", camera.getViewMatrix());
+        simpleShader.setMat4("model", glm::mat4(1.0f));
+        simpleShader.setVec3("light.position", lightSource.position);
+        simpleShader.setVec3("viewPos", camera.position);
+        simpleShader.setVec3("light.ambient", lightSource.ambient);
+        simpleShader.setVec3("light.diffuse", lightSource.diffuse);
+        simpleShader.setVec3("light.specular", lightSource.specular);
+
+        bool transparentTunnels = freeCameraMode;
+        railroadMap.drawTunnels(simpleShader, transparentTunnels);
+        trainManager.draw(modelShader, camera, lightSource);
+        draw_stones(simpleShader, camera, lightSource);
+        railroadMap.draw(simpleShader, camera, lightSource);
+        railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+        // Панель управления (существующий код)
+        if (ImGui::Begin("Camera Control")) {
+            ImGui::Text("Update core");
+            if (ImGui::Button("Pause/Unpause")) {
+                pauseUpdate = !pauseUpdate;
+            }
+
+            ImGui::Text("Label Display Mode");
+
+            if (ImGui::RadioButton("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC && railroadMap.showStationLabels)) {
+                railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
+                railroadMap.showStationLabels = true;
+            }
+
+            if (ImGui::RadioButton("Dynamic", railroadMap.getLabelDisplayMode() == LabelDisplayMode::DYNAMIC && railroadMap.showStationLabels)) {
+                railroadMap.setLabelDisplayMode(LabelDisplayMode::DYNAMIC);
+                railroadMap.showStationLabels = true;
+            }
+
+            if (ImGui::RadioButton("Off", !railroadMap.showStationLabels)) {
+                railroadMap.showStationLabels = false;
+            }
+
+            ImGui::Separator();
+
+            // Добавляем контроль туннелей
+            bool showTunnels = railroadMap.getShowTunnels();
+            if (ImGui::Checkbox("Show Tunnels", &showTunnels)) {
+                railroadMap.setShowTunnels(showTunnels);
+            }
+
+            ImGui::Separator();
+            ImGui::Text("Camera Mode");
+
+            if (ImGui::RadioButton("Free Camera", freeCameraMode)) {
+                freeCameraMode = true;
+                camera.mode = FREE;
+            }
+
+            if (ImGui::RadioButton("Follow Train", !freeCameraMode)) {
+                freeCameraMode = false;
+                camera.mode = FOLLOW;
+            }
+
+            if (!freeCameraMode) {
+                ImGui::Text("Select Train to Follow:");
+                size_t trainCount = trainManager.getTrainCount();
+                for (size_t i = 0; i < trainCount; i++) {
+                    std::string trainLabel = "Train " + std::to_string(i + 1);
+                    if (ImGui::RadioButton(trainLabel.c_str(), selectedTrainIndex == i)) {
+                        selectedTrainIndex = i;
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::Button("Back to Main Menu", ImVec2(200, 30))) {
+                showMainMenu = true;
+                citySelected = false;
+                pauseUpdate = true;
+            }
+
+        }
+        ImGui::End();
+    }
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
     glUseProgram(0);
     glfwSwapBuffers(window);
@@ -769,18 +986,19 @@ void App::loop() {
         // input
         process_input(window);
 
-        // camera
-        if (!freeCameraMode && camera.mode == FOLLOW) {
-            if (static_cast<size_t>(selectedTrainIndex) < trainManager.getTrainCount()) {
-                glm::vec3 target = trainManager.getTrain(selectedTrainIndex)->getPosition();
-                camera.target_position = target;
+        // Обновляем камеру и поезда только если город выбран
+        if (citySelected && !showMainMenu) {
+            if (!freeCameraMode && camera.mode == FOLLOW) {
+                if (static_cast<size_t>(selectedTrainIndex) < trainManager.getTrainCount()) {
+                    glm::vec3 target = trainManager.getTrain(selectedTrainIndex)->getPosition();
+                    camera.target_position = target;
+                }
             }
-        }
-        camera.update();
+            camera.update();
 
-        // train
-        if (!pauseUpdate)
-            trainManager.update(deltaTime_s);
+            if (!pauseUpdate)
+                trainManager.update(deltaTime_s);
+        }
 
         // rendering
         render(window);
