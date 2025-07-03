@@ -329,6 +329,9 @@ void loadSelectedCity(GLFWwindow* window) {
 
     const City& city = cities[selectedCityIndex];
 
+    // Очищаем все данные предыдущего города
+    railroadMap.clear();
+
     // Инициализируем RailroadMap с данными выбранного города
     railroadMap.initialize(city.points, city.routeIndices);
     railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
@@ -867,11 +870,12 @@ void render(GLFWwindow *window) {
                                ImGuiCond_Always, ImVec2(0.5f, 0.5f));
         ImGui::SetNextWindowSize(ImVec2(400, 300));
 
-        if (ImGui::Begin("Select City", nullptr,
+        if (ImGui::Begin("Main Menu", nullptr,
                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                         ImGuiWindowFlags_NoCollapse)) {
-
-            ImGui::Text("Choose a city to explore:");
+            ImGui::Text("Welcome to Metro Systems Simulator");
+            ImGui::Separator();
+            ImGui::Text("Please, choose a city to explore:");
             ImGui::Separator();
 
             for (size_t i = 0; i < cities.size(); ++i) {

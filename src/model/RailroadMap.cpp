@@ -778,3 +778,20 @@ bool RailroadMap::loadTunnelTextures(const std::string& texturePath) {
 
     return success;
 }
+
+void RailroadMap::clear() {
+    routes.clear();
+    allPoints.clear();  // Используйте allPoints вместо points
+    stations.clear();
+    stationNames.clear();
+    routeIndices.clear();
+
+    // Очищаем данные туннелей
+    tunnels.clear();
+    tunnelsGenerated = false;
+
+    // Сбрасываем флаги текстур
+    boxTexturesLoaded = false;
+
+    std::cout << "RailroadMap cleared" << std::endl;
+}

@@ -269,7 +269,7 @@ public:
         }
         return routes[index];
     }
-
+    void clear();
 };
 
 
