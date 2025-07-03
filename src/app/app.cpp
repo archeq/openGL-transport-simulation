@@ -227,53 +227,6 @@ std::vector<std::string> faces = {
     "../textures/back.jpg"
 };
 
-// std::vector<glm::vec3> allPoints = {
-//     // Индексы 0-6: точки первого маршрута
-//     glm::vec3(-60.0f, 0.0f, 51.0f),   // A (0)
-//     glm::vec3(-30.0f, 0.0f, 45.0f),   // B (1)
-//     glm::vec3(-5.0f, 0.0f, 30.0f),    // C (2)
-//     glm::vec3(35.0f, 0.0f, -10.0f),    // D (3)
-//     glm::vec3(110.0f, 0.0f, -15.0f),    // E (4)
-//     glm::vec3(150.0f, 0.0f, 40.0f),    // F (5)
-//
-//
-//
-//     glm::vec3(-115.0f, 0.0f, -45.0f),    // G (6)
-//     glm::vec3(-70.0f, 0.0f, -55.0f),  // H (7)
-//     glm::vec3(-20.0f, 0.0f, -25.0f),  // I (8)
-//     glm::vec3(75.0f, 0.0f, 45.0f),   // J (9)
-//     glm::vec3(130.0f, 0.0f, 75.0f),   // K (10)
-//     glm::vec3(60.0f, 0.0f, 125.0f),   // L (11)
-//     glm::vec3(30.0f, 0.0f, 85.0f),    // M (12)
-//     glm::vec3(-15.0f, 0.0f, -105.0f),    // N (13)
-//     glm::vec3(-60.0f, 0.0f, -160.0f),    // O (14)
-// };
-//
-// // Определяем маршруты по индексам
-// std::vector<std::vector<int>> routeIndices = {
-//     {0, 1, 2, 3, 4, 5},      // route 1
-//     {6, 7, 8, 3, 9, 10,},    // route 2
-//     {11, 12, 2, 8, 13, 14,},    // route 3
-// };
-//
-// // Добавляем названия станций
-// std::vector<std::string> stationNames = {
-//     "Gavnar",                // Станция 0 (вместо "Central Station")
-//     "North Terminal",        // Станция 1 (вместо "Северная")
-//     "East Junction",         // Станция 2 (вместо "Восточная")
-//     "South Gate",            // Станция 3 (вместо "Южная")
-//     "West End",              // Станция 4 (вместо "Западная")
-//     "Final Stop",            // Станция 5 (вместо "Конечная")
-//     "Industrial Park",       // Станция 6 (вместо "Промышленная")
-//     "Riverside",             // Станция 7 (вместо "Речная")
-//     "Mountain View",         // Станция 8 (вместо "Горная")
-//     "Green Park",            // Станция 9 (вместо "Парковая")
-//     "UAM (kazn perdezhom)",  // Станция 10 (вместо "Университетская")
-//     "Sports Complex",        // Станция 11 (вместо "Спортивная")
-//     "Theater District",      // Станция 12 (вместо "Театральная")
-//     "Museum Quarter",        // Станция 13 (вместо "Музейная")
-//     "Airport Terminal"       // Станция 14 (вместо "Аэропорт")
-// };
 
 void loadSelectedCity(GLFWwindow* window) {
     if (selectedCityIndex >= cities.size()) return;
@@ -430,17 +383,6 @@ void test_setup(GLFWwindow* window) {
     // Инициализируем города
     initializeCities();
 
-    // // СНАЧАЛА инициализируем RailroadMap
-    // railroadMap.initialize(allPoints, routeIndices);
-    // railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
-    // railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
-    //
-    //
-    //
-    // railroadMap.setStationNames(stationNames);
-    //
-    // std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
-
     // ЗАТЕМ создаем модель поезда
     // TODO: TRAIN MODEL LOAD
     // trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
@@ -451,10 +393,6 @@ void test_setup(GLFWwindow* window) {
         trainModelPtr->scale = glm::vec3(0.12);
         trainModelPtr->rotation_deg = glm::vec3(0, 90, 0);
     }
-
-    // trainManager.addTrain(trainModelPtr, 0, 25.0f);
-    // trainManager.addTrain(trainModelPtr, 1, 25.0f);
-    // trainManager.addTrain(trainModelPtr, 2, 25.0f);
 
     setup_ground();
 }
@@ -744,67 +682,6 @@ void draw_stones(const Shader &shader, const Camera &camera, const LightSource &
     }
 }
 
-// void render(GLFWwindow *window) {
-//     // 1) temporal function for TESTING only
-//     // 2) there's nothing more permanent than a temporary solution
-//     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//     // ImGui frame
-//     ImGui_ImplOpenGL3_NewFrame();
-//     ImGui_ImplGlfw_NewFrame();
-//     ImGui::NewFrame();
-//
-//     // skybox
-//     skybox.draw(camera);
-//
-//     // ground
-//     draw_ground(camera, lightSource);
-//
-//     // light
-//     lightSource.draw_as_cube(camera, 3);
-//
-//     // Настройка шейдера для освещения
-//     simpleShader.use();
-//     simpleShader.setMat4("projection", camera.getProjectionMatrix());
-//     simpleShader.setMat4("view", camera.getViewMatrix());
-//     simpleShader.setMat4("model", glm::mat4(1.0f));
-//     simpleShader.setVec3("light.position", lightSource.position);
-//     simpleShader.setVec3("viewPos", camera.position);
-//     simpleShader.setVec3("light.ambient", lightSource.ambient);
-//     simpleShader.setVec3("light.diffuse", lightSource.diffuse);
-//     simpleShader.setVec3("light.specular", lightSource.specular);
-//
-//     // Туннели (прозрачные в free camera режиме)
-//     bool transparentTunnels = freeCameraMode;
-//     railroadMap.drawTunnels(simpleShader, transparentTunnels);
-//
-//     // Добавляем отрисовку поездов через менеджер
-//     trainManager.draw(modelShader, camera, lightSource);
-//
-//     // stones
-//     draw_stones(simpleShader, camera, lightSource);
-//
-//     // railroad
-//     railroadMap.draw(simpleShader, camera, lightSource);
-//
-//
-//
-//     // Этикетки станций
-//     railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
-//
-//     // GUI панель управления
-//     // GUI панель управления (замените существующий блок ImGui)
-//
-//
-//     // Рендеринг ImGui
-//     ImGui::Render();
-//     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-//
-//
-//     glUseProgram(0);
-//     glfwSwapBuffers(window);
-// }
 
 void render(GLFWwindow *window) {
     glClearColor(0.00f, 0.0f, 0.05f, 1.0f);
