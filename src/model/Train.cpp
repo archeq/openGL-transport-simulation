@@ -9,55 +9,12 @@
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 
-// void Train::update(float deltaTime) {
-//     if (speed <= 0.0f) return;
-//
-//     // Проверяем близость к станциям и корректируем скорость
-//     float currentSpeed = speed;
-//     for (const auto& station : railroadMap->stations) {
-//         float distance = glm::length(position - station);
-//         if (distance < slowdownRadius) {
-//             currentSpeed = slowdownSpeed;
-//             isSlowingDown = true;
-//             break;
-//         } else {
-//             isSlowingDown = false;
-//             currentSpeed = originalSpeed;
-//         }
-//     }
-//
-//     // Обновляем позицию по маршруту
-//     const auto& route = railroadMap->getRoute(routeIndex);
-//
-//
-//
-//     // Увеличиваем параметр t
-//     float step = currentSpeed * deltaTime * 0.1f; // Коэффициент для корректировки скорости
-//     currentT += step;
-//
-//
-//     // Переход к следующему сегменту
-//     if (currentT >= 1.0f) {
-//         currentT = 0.0f;
-//         currentSegment++;
-//
-//         // Проверка конца маршрута
-//         if (currentSegment >= route.getSegmentCount()) {
-//             currentSegment = 0; // Цикличный маршрут
-//         }
-//     }
-//
-//     updatePosition();
-// }
-
-
 void Train::update(float deltaTime) {
     if (speed <= 0.0f) return;
 
-    // Проверяем замедление у станций
     checkStationSlowdown();
 
-    // Двигаем поезд по маршруту
+
     float moveSpeed = isSlowingDown ? slowdownSpeed : originalSpeed;
     currentT += moveSpeed * deltaTime * 0.01f; // уменьшенный коэффициент
 
@@ -90,11 +47,7 @@ void Train::updatePosition() {
     position = route.getPoint(currentSegment, currentT);
     glm::vec3 direction = glm::normalize(route.getDirection(currentSegment, currentT));
 
-    // Вычисляем поворот модели
-    glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
-
     if (glm::length(direction) > 0.001f) {
-        // Вычисляем угол поворота вокруг оси Y
         float yaw = atan2(direction.x, direction.z);
         rotation = glm::vec3(0.0f, glm::degrees(yaw), 0.0f);
     }
@@ -126,13 +79,6 @@ void Train::checkStationSlowdown() {
         isSlowingDown = false;
     }
 }
-
-
-
-
-
-
-
 
 void Train::draw(const Shader& shader, const Camera& camera, const LightSource& lightSource) {
     if (model && model->is_loaded()) {

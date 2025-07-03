@@ -522,7 +522,7 @@ void RailroadMap::draw_station_boxes(const Shader& shader) {
 bool RailroadMap::loadStationBoxTextures(const std::string& diffuseTexturePath, const std::string& specularTexturePath) {
 
     if (boxTexturesLoaded) {
-        return true; // Текстуры уже загружены, ничего не делаем
+        return true;
     }
 
     try {
@@ -532,7 +532,7 @@ bool RailroadMap::loadStationBoxTextures(const std::string& diffuseTexturePath, 
         boxSpecularTextureID = specularTex.id;
         std::cout << "Box diffuse texture ID: " << boxDiffuseTextureID << std::endl;
         std::cout << "Box specular texture ID: " << boxSpecularTextureID << std::endl;
-        boxTexturesLoaded = true; // Устанавливаем флаг в true после успешной загрузки
+        boxTexturesLoaded = true;
         return true;
     } catch (const std::exception& e) {
         std::cout << "Exception during box texture loading: " << e.what() << std::endl;
@@ -546,20 +546,15 @@ void RailroadMap::draw(const Shader &shader, const Camera &camera, const LightSo
     shader.setMat4("projection", camera.getProjectionMatrix());
     shader.setMat4("view", camera.getViewMatrix());
     shader.setMat4("model", glm::mat4(1.0f));
-    // Установка uniform-переменных для освещения
     shader.setVec3("light.position", lightSource.position);
     shader.setVec3("viewPos", camera.position);
     shader.setVec3("light.ambient", lightSource.ambient);
     shader.setVec3("light.diffuse", lightSource.diffuse);
     shader.setVec3("light.specular", lightSource.specular);
-    // material properties
     shader.setFloat("material.shininess", 32.0f);
-    // Установка текстурного слота
     shader.setInt("material.diffuse", 0);
-    // Отрисовка рельсов и станций
+
     draw_rails(shader);
-    // draw_stations(shader);
-    // draw_station_boxes(shader);
     draw_station_spheres(shader);
     
 }
@@ -574,7 +569,7 @@ glm::vec2 RailroadMap::worldToScreen(const glm::vec3& worldPos, const Camera& ca
     glm::mat4 mvp = projection * view;
 
     glm::vec4 clipSpace = mvp * glm::vec4(worldPos, 1.0f);
-    if (clipSpace.w <= 0) return glm::vec2(-1, -1); // За камерой
+    if (clipSpace.w <= 0) return glm::vec2(-1, -1);
 
     glm::vec3 ndc = glm::vec3(clipSpace) / clipSpace.w;
     glm::vec2 screenPos;

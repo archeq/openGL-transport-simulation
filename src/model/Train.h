@@ -24,7 +24,6 @@ private:
     glm::vec3 position;
     glm::vec3 rotation;
 
-    // Ссылка на RailroadMap для доступа к маршрутам
     const RailroadMap* railroadMap;
 
 public:
