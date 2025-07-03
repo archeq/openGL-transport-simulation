@@ -77,8 +77,6 @@ public:
     }
 };
 
-
-
 class CatmullRomSpline {
 private:
     std::vector<glm::vec3> controlPoints;
@@ -152,13 +150,7 @@ public:
     }
 };
 
-
-
 class RailroadMap {
-private:
-
-
-
     std::vector<glm::vec3> allPoints; // Все точки
     std::vector<std::vector<int>> routeIndices; // Маршруты как индексы точек
     std::vector<CatmullRomSpline> routes;
@@ -186,12 +178,9 @@ public:
     RailroadMap(const std::vector<std::vector<glm::vec3>>& routePoints);
     std::vector<glm::vec3> stations;
 
-
-
     void setPoints(const std::vector<glm::vec3>& points);
     void addRoute(const std::vector<int>& pointIndices);
     void initialize(const std::vector<glm::vec3>& points, const std::vector<std::vector<int>>& routes);
-
 
     const glm::vec3& getPoint(int index) const { return allPoints[index]; }
     size_t getPointsCount() const { return allPoints.size(); }
@@ -200,14 +189,9 @@ public:
     // Обновляем сигнатуру функции - теперь без дополнительных параметров
     void draw_station_boxes(const Shader& shader);
 
-
-
     // В RailroadMap.h добавьте новый метод:
     void createStationSpheresMesh();
     void draw_station_spheres(const Shader& shader);
-
-
-
 
     ~RailroadMap();
 
@@ -219,16 +203,8 @@ public:
     [[nodiscard]] unsigned int getRailTextureID() const { return railTextureID; }
     [[nodiscard]] unsigned int getStationTextureID() const { return stationTextureID; }
 
-
-
     // Добавьте эти методы в публичную секцию RailroadMap
     size_t getRouteCount() const { return routes.size(); }
-    // const CatmullRomSpline& getRoute(int index) const {
-    //     if (index < 0 || index >= routes.size()) {
-    //         throw std::out_of_range("Route index out of range");
-    //     }
-    //     return routes[index];
-    //     }
     const CatmullRomSpline& RailroadMap::getRoute(int index) const {
         if (index < 0 || index >= static_cast<int>(routes.size())) {
             std::cout << "ERROR: Route index " << index << " out of range (0-" << routes.size()-1 << ")" << std::endl;
