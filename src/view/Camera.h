@@ -4,6 +4,7 @@
 
 #ifndef CAMERA_H
 #define CAMERA_H
+
 #include "glad/glad.h"
 #include "glm/vec3.hpp"
 #include "glm/mat4x4.hpp"
@@ -39,7 +40,7 @@ public:
     float MouseSensitivity = 0.14f;
     float Zoom = 45.0f;
     float near_distance = 0.1f;
-    float far_distance = 200.0f;
+    float far_distance = 500.0f;
     float ratio;
     Camera_modes mode = FREE; // default camera mode'
     glm::vec3 target_position; // target to follow
