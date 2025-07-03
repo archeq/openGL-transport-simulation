@@ -69,6 +69,7 @@ bool freeCameraMode = false;
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     if (camera.mode == FOLLOW) {
         camera.follow_distance += static_cast<float>(yoffset);
+        camera.follow_distance = std::max(0.0f, camera.follow_distance);
     }
 }
 
