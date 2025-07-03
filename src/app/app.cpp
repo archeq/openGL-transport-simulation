@@ -310,6 +310,8 @@ void render(GLFWwindow *window) {
     railroadMap.draw(simpleShader, camera, lightSource);
 
 
+
+
     glUseProgram(0);
     glfwSwapBuffers(window);
 }

@@ -122,10 +122,12 @@ void RailroadMap::createRailsMesh() {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     const float railWidth = 0.2f;
+    const float textureRepeat = 2.0f; // Коэффициент повторения текстуры
 
     // Для каждого маршрута
     for (size_t routeIdx = 0; routeIdx < routes.size(); ++routeIdx) {
         const auto& route = routes[routeIdx];
+        float accumulatedDistance = 0.0f; // Накопленное расстояние для текстурных координат
 
         // Для каждого сегмента сплайна
         for (int segment = 0; segment < route.getSegmentCount(); ++segment) {
@@ -138,26 +140,25 @@ void RailroadMap::createRailsMesh() {
                 glm::vec3 pos = route.getPoint(segment, t);
                 glm::vec3 nextPos = route.getPoint(segment, nextT);
 
+                // Вычисляем расстояние между текущей и следующей точкой
+                float segmentLength = glm::length(nextPos - pos);
+
                 // Получаем направление для создания ширины рельса
                 glm::vec3 direction = route.getDirection(segment, t);
                 glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-                // Если направление почти вертикально, используем другой вектор для cross
                 if (glm::length(glm::cross(direction, up)) < 0.001f) {
                     up = glm::vec3(0.0f, 0.0f, 1.0f);
                 }
 
                 glm::vec3 right = glm::normalize(glm::cross(direction, up)) * railWidth;
 
-                // Левая сторона рельса - ПОДНИМАЕМ НА 0.01f
                 glm::vec3 left = pos - right;
-                left.y += 0.01f; // Поднимаем рельсы над поверхностью
+                left.y += 0.01f;
 
-                // Правая сторона рельса - ПОДНИМАЕМ НА 0.01f
                 glm::vec3 right_pos = pos + right;
                 right_pos.y += 0.01f;
 
-                // Получаем направление для следующей точки
                 glm::vec3 nextDirection = route.getDirection(segment, nextT);
                 if (glm::length(glm::cross(nextDirection, up)) < 0.001f) {
                     up = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -165,35 +166,36 @@ void RailroadMap::createRailsMesh() {
 
                 glm::vec3 nextRight = glm::normalize(glm::cross(nextDirection, up)) * railWidth;
                 glm::vec3 nextLeft = nextPos - nextRight;
-                nextLeft.y += 0.01f; // Поднимаем рельсы над поверхностью
+                nextLeft.y += 0.01f;
                 glm::vec3 nextRightPos = nextPos + nextRight;
                 nextRightPos.y += 0.01f;
 
-                // Нормаль направлена вверх для всех вершин рельса
                 glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
 
-                // Добавляем вершины
+                // Вычисляем текстурные координаты на основе накопленного расстояния
+                float nextAccumulatedDistance = accumulatedDistance + segmentLength;
+
                 Vertex v1, v2, v3, v4;
 
-                // Первый треугольник
                 v1.Position = left;
                 v1.Normal = normal;
-                v1.TexCoords = glm::vec2(t * 5.0f, 0.0f);
+                v1.TexCoords = glm::vec2(accumulatedDistance * textureRepeat, 0.0f);
 
                 v2.Position = right_pos;
                 v2.Normal = normal;
-                v2.TexCoords = glm::vec2(t * 5.0f, 1.0f);
+                v2.TexCoords = glm::vec2(accumulatedDistance * textureRepeat, 1.0f);
 
                 v3.Position = nextLeft;
                 v3.Normal = normal;
-                v3.TexCoords = glm::vec2(nextT * 5.0f, 0.0f);
+                v3.TexCoords = glm::vec2(nextAccumulatedDistance * textureRepeat, 0.0f);
 
-                // Второй треугольник
                 v4.Position = nextRightPos;
                 v4.Normal = normal;
-                v4.TexCoords = glm::vec2(nextT * 5.0f, 1.0f);
+                v4.TexCoords = glm::vec2(nextAccumulatedDistance * textureRepeat, 1.0f);
 
-                // Добавляем вершины
+                // Обновляем накопленное расстояние
+                accumulatedDistance = nextAccumulatedDistance;
+
                 unsigned int indexOffset = vertices.size();
 
                 vertices.push_back(v1);
@@ -203,7 +205,6 @@ void RailroadMap::createRailsMesh() {
                 vertices.push_back(v4);
                 vertices.push_back(v3);
 
-                // Добавляем индексы
                 indices.push_back(indexOffset);
                 indices.push_back(indexOffset + 1);
                 indices.push_back(indexOffset + 2);
@@ -214,14 +215,9 @@ void RailroadMap::createRailsMesh() {
         }
     }
 
-    // Создаем текстуру для рельсов
     std::vector<Texture> textures;
-    Texture railTexture;
-
-    // Создаем меш из вершин, индексов и текстур
     railMesh = std::make_unique<Mesh>(vertices, indices, textures);
     railVerticesCount = vertices.size();
-
 }
 
 
