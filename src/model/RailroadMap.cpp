@@ -8,8 +8,10 @@
 #include <glm/gtx/vector_angle.hpp>
 
 
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
-
+double piD = glm::pi<double>();
 
 
 
@@ -42,8 +44,8 @@ void RailroadMap::setPoints(const std::vector<glm::vec3>& points) {
 void RailroadMap::addRoute(const std::vector<int>& pointIndices) {
     // Проверяем валидность индексов
     for (int index : pointIndices) {
-        if (index < 0 || index >= allPoints.size()) {
-            std::cout << "Invalid point index: " << index << std::endl;
+        if (index < 0 || index >= static_cast<int>(allPoints.size())) {
+            std::cout << "Invalid point index: " << index << " (total points: " << allPoints.size() << ")" << std::endl;
             return;
         }
     }
@@ -58,6 +60,9 @@ void RailroadMap::addRoute(const std::vector<int>& pointIndices) {
 
     if (routePoints.size() >= 2) {
         routes.emplace_back(routePoints);
+        std::cout << "Route " << (routes.size() - 1) << " created with " << routePoints.size() << " points" << std::endl;
+    } else {
+        std::cout << "ERROR: Route needs at least 2 points, got " << routePoints.size() << std::endl;
     }
 }
 
@@ -70,32 +75,23 @@ void RailroadMap::initialize(const std::vector<glm::vec3>& points, const std::ve
     routeIndices.clear();
 
     setPoints(points);
+    std::cout << "Initialized with " << points.size() << " points" << std::endl;
 
+    for (size_t i = 0; i < routeIndexArrays.size(); ++i) {
+        const auto& routeIdx = routeIndexArrays[i];
+        std::cout << "Adding route " << i << " with " << routeIdx.size() << " point indices" << std::endl;
 
-    // Old code
-
-    // for (const auto& route : routePoints) {
-    //     // Проверяем, достаточно ли точек для сплайна
-    //     if (route.size() >= 2) {
-    //         // Создаем сплайн для маршрута
-    //         routes.emplace_back(route);
-    //
-    //         // Сохраняем станции
-    //         for (const auto& point : route) {
-    //             stations.push_back(point);
-    //         }
-    //     }
-    // }
-
-
-    for (const auto& routeIdx : routeIndexArrays) {
         addRoute(routeIdx);
 
         // Добавляем станции из этого маршрута
         for (int index : routeIdx) {
-            stations.push_back(allPoints[index]);
+            if (index >= 0 && index < static_cast<int>(allPoints.size())) {
+                stations.push_back(allPoints[index]);
+            }
         }
     }
+
+    std::cout << "Total routes created: " << routes.size() << std::endl;
 
     createRailsMesh();
     createStationsMesh();
@@ -347,17 +343,119 @@ void RailroadMap::createStationBoxMesh() {
 }
 
 
+void RailroadMap::createStationSpheresMesh() {
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    const int latitudeSegments = 16;  // Количество сегментов по широте
+    const int longitudeSegments = 32; // Количество сегментов по долготе
+    const float radius = 0.3f;        // Радиус сферы
+
+    // Создаем вершины сферы
+    for (int lat = 0; lat <= latitudeSegments; ++lat) {
+        float theta = lat * piD / latitudeSegments; // От 0 до π
+        float sinTheta = sin(theta);
+        float cosTheta = cos(theta);
+
+        for (int lon = 0; lon <= longitudeSegments; ++lon) {
+            float phi = lon * 2 * piD / longitudeSegments; // От 0 до 2π
+            float sinPhi = sin(phi);
+            float cosPhi = cos(phi);
+
+            Vertex vertex;
+            // Позиция на единичной сфере
+            vertex.Position = glm::vec3(
+                radius * sinTheta * cosPhi,
+                radius * cosTheta,
+                radius * sinTheta * sinPhi
+            );
+
+            // Нормаль для сферы = нормализованная позиция
+            vertex.Normal = glm::normalize(vertex.Position / radius);
+
+            // Текстурные координаты (не используются, но нужны для совместимости)
+            vertex.TexCoords = glm::vec2(
+                (float)lon / longitudeSegments,
+                (float)lat / latitudeSegments
+            );
+
+            vertices.push_back(vertex);
+        }
+    }
+
+    // Создаем индексы для треугольников
+    for (int lat = 0; lat < latitudeSegments; ++lat) {
+        for (int lon = 0; lon < longitudeSegments; ++lon) {
+            int current = lat * (longitudeSegments + 1) + lon;
+            int next = current + longitudeSegments + 1;
+
+            // Первый треугольник
+            indices.push_back(current);
+            indices.push_back(next);
+            indices.push_back(current + 1);
+
+            // Второй треугольник
+            indices.push_back(current + 1);
+            indices.push_back(next);
+            indices.push_back(next + 1);
+        }
+    }
+
+    // Создаем меш без текстур
+    std::vector<Texture> textures;
+    stationSphereMesh = std::make_unique<Mesh>(vertices, indices, textures);
+}
+
+
+void RailroadMap::draw_station_spheres(const Shader& shader) {
+    if (!stationSphereMesh) {
+        createStationSpheresMesh();
+    }
+
+    if (stationSphereMesh) {
+        // Устанавливаем красный цвет материала
+        shader.setVec3("material.diffuse_color", glm::vec3(1.0f, 0.0f, 0.0f)); // Красный цвет
+        shader.setVec3("material.specular_color", glm::vec3(0.3f, 0.3f, 0.3f));
+        shader.setFloat("material.shininess", 32.0f);
+
+        // Отключаем использование текстур
+        shader.setBool("use_texture", false);
+
+        // Для каждой станции устанавливаем модельную матрицу и рисуем сферу
+        for (const auto& station : stations) {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, station);
+            model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0f)); // Поднимаем над землей
+
+            shader.setMat4("model", model);
+            stationSphereMesh->draw(shader);
+        }
+    } else {
+        std::cout << "Station sphere mesh is not initialized!" << std::endl;
+    }
+}
+
+
 
 void RailroadMap::draw_rails(const Shader& shader) {
-    // Если railMesh существует, рисуем его
     if (railMesh) {
-        // Активируем текстуру рельсов
+        // Включаем использование текстур
+        shader.setBool("use_texture", true);
+
+        // Устанавливаем текстуры рельсов
         shader.setInt("material.diffuse", 0);
+        shader.setInt("material.specular", 1);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, railTextureID);
 
-        // Отрисовываем меш, используя переданный шейдер
+        // Если есть specular текстура, используем её, иначе diffuse
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, railTextureID); // Используем ту же текстуру для specular
+
+        // Устанавливаем свойства материала
+        shader.setFloat("material.shininess", 32.0f);
+
         railMesh->draw(shader);
     } else {
         std::cout << "Rail mesh is not initialized!" << std::endl;
@@ -366,11 +464,20 @@ void RailroadMap::draw_rails(const Shader& shader) {
 
 void RailroadMap::draw_stations(const Shader& shader) {
     if (stationMesh) {
-        // Активируем текстуру станций
+        // Включаем использование текстур
+        shader.setBool("use_texture", true);
+
+        shader.setInt("material.diffuse", 0);
+        shader.setInt("material.specular", 1);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, stationTextureID);
 
-        // Отрисовываем меш, используя переданный шейдер
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, stationTextureID);
+
+        shader.setFloat("material.shininess", 32.0f);
+
         stationMesh->draw(shader);
     } else {
         std::cout << "Station mesh is not initialized!" << std::endl;
@@ -394,7 +501,7 @@ void RailroadMap::draw_station_boxes(const Shader& shader) {
         for (const auto& station : stations) {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, station);
-            model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));
+            model = glm::translate(model, glm::vec3(0.0f, 2.f, 0.0f));
             model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
 
             shader.setMat4("model", model);
@@ -446,7 +553,8 @@ void RailroadMap::draw(const Shader &shader, const Camera &camera, const LightSo
     shader.setInt("material.diffuse", 0);
     // Отрисовка рельсов и станций
     draw_rails(shader);
-    draw_stations(shader);
-    draw_station_boxes(shader);
+    // draw_stations(shader);
+    // draw_station_boxes(shader);
+    draw_station_spheres(shader);
     
 }

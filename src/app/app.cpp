@@ -17,7 +17,7 @@
 #include "LightSource.h"
 #include "Model.h"
 #include "RailroadMap.h"
-
+#include "TrainManager.h"
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "stb/stb_image.h"
@@ -99,13 +99,43 @@ GLFWwindow *App::window_init(int width, int height) {
 
 Shader simpleShader, lightSourceShader, modelShader;
 unsigned int VBO, cubeVAO, lightCubeVAO;
+
+
+// test box
+// glGenVertexArrays(1, &cubeVAO);
+// glGenBuffers(1, &VBO);
+//
+// glBindBuffer(GL_ARRAY_BUFFER, VBO);
+// glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_pnt), cube_vertices_pnt, GL_STATIC_DRAW);
+//
+// glBindVertexArray(cubeVAO);
+//
+// // position attribute
+// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+// glEnableVertexAttribArray(0);
+//
+// // normal attribute
+// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+// glEnableVertexAttribArray(1);
+//
+// // texture attribute
+// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
+// glEnableVertexAttribArray(2);
+
+
+
+
 Texture boxTexture, boxSpecularMap, railTexture, stationTexture;
 Camera camera;
 Model trainModel;
 LightSource lightSource;
 
+
+
 // Объявляем глобальную переменную railroadMap и routes
 RailroadMap railroadMap;
+TrainManager trainManager(railroadMap);
+std::shared_ptr<Model> trainModelPtr;
 
 std::vector<glm::vec3> allPoints = {
     // Индексы 0-6: точки первого маршрута
@@ -152,36 +182,41 @@ void test_setup() {
                         glm::vec3(1.0f, 1.0f, 1.0f));
 
     // trainModel = Model("../models/train/Intercity 125 Executive Livery With Buffers.obj");
-    if (!trainModel.is_loaded()) {
-        std::cout << "ERROR:: Train model failed to load!" << std::endl;
-    }
-    trainModel.scale = glm::vec3(0.12);
-    trainModel.rotation_deg = glm::vec3(0, 90, 0);
+    // if (!trainModel.is_loaded()) {
+    //     std::cout << "ERROR:: Train model failed to load!" << std::endl;
+    // }
+    // trainModel.scale = glm::vec3(0.12);
+    // trainModel.rotation_deg = glm::vec3(0, 90, 0);
 
+    // СНАЧАЛА инициализируем RailroadMap
     railroadMap.initialize(allPoints, routeIndices);
     railroadMap.loadTextures("../textures/rail.png", "../textures/station.png");
     railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
 
-    // test box
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &VBO);
+    std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_pnt), cube_vertices_pnt, GL_STATIC_DRAW);
+    // ЗАТЕМ создаем модель поезда
+    trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
+    if (!trainModelPtr->is_loaded()) {
+        std::cout << "ERROR:: Train model failed to load!" << std::endl;
+    } else {
+        trainModelPtr->scale = glm::vec3(0.12);
+        trainModelPtr->rotation_deg = glm::vec3(0, 90, 0);
+    }
 
-    glBindVertexArray(cubeVAO);
+    // ТОЛЬКО ПОСЛЕ этого добавляем поезда
+    // Добавляем поезда на разные маршруты
+    trainManager.addTrain(trainModelPtr, 0, 15.0f);  // Маршрут 0, скорость 15
+    trainManager.addTrain(trainModelPtr, 1, 15.0f);  // Маршрут 1, скорость 15
+    trainManager.addTrain(trainModelPtr, 2, 15.0f);  // Маршрут 2, скорость 15
 
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
+    // Настройки замедления у станций
+    trainManager.setStationSlowdownSettings(8.0f, 0.99f);
 
-    // normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
-    // texture attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+
+
+
 
 }
 
@@ -272,7 +307,11 @@ void render(GLFWwindow *window) {
     lightSource.draw_as_cube(camera, 0.5);
 
     // test model
-    trainModel.draw(modelShader, camera, lightSource);
+    // trainModel.draw(modelShader, camera, lightSource);
+
+    // Добавляем отрисовку поездов через менеджер
+
+    trainManager.draw(modelShader, camera, lightSource);
 
     // railroad
     railroadMap.draw(simpleShader, camera, lightSource);
@@ -291,8 +330,14 @@ void App::loop() {
         deltaTime_s = currentFrame - lastFrame_s;
         lastFrame_s = currentFrame;
 
+
+
         // input
         process_input(window);
+
+
+        // train
+        trainManager.update(deltaTime_s);
 
         // rendering
         render(window);

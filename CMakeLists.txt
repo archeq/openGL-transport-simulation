@@ -29,6 +29,10 @@ add_executable(app
         src/main.cpp
         src/view/LightSource.cpp
         src/model/RailroadMap.cpp
-        )
+        src/model/Train.cpp
+        src/model/Train.h
+        src/model/TrainManager.cpp
+        src/model/TrainManager.h
+)
 
 target_link_libraries(app PRIVATE glfw assimp::assimp)

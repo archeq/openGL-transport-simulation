@@ -6,13 +6,14 @@
 #define RAILROAD_MAP_H
 
 #include <vector>
+#include <stdexcept>
 #include <glm/glm.hpp>
 #include "Camera.h"
 #include <memory>
-
+#include <iostream>
 #include "LightSource.h"
 #include "Mesh.h"
-#include "Shader.h" // Добавьте включение заголовочного файла Shader
+#include "Shader.h"
 
 // Структура для хранения кривой Безье третьего порядка
 
@@ -166,7 +167,7 @@ private:
     std::unique_ptr<Mesh> railMesh;
     std::unique_ptr<Mesh> stationMesh;
     std::unique_ptr<Mesh> stationBoxMesh;
-
+    std::unique_ptr<Mesh> stationSphereMesh;
 
     int railVerticesCount{}, stationVerticesCount{};
     unsigned int railTextureID = 0, stationTextureID = 0;
@@ -199,6 +200,15 @@ public:
     // Обновляем сигнатуру функции - теперь без дополнительных параметров
     void draw_station_boxes(const Shader& shader);
 
+
+
+    // В RailroadMap.h добавьте новый метод:
+    void createStationSpheresMesh();
+    void draw_station_spheres(const Shader& shader);
+
+
+
+
     ~RailroadMap();
 
     bool loadTextures(const std::string& railTexturePath, const std::string& stationTexturePath);
@@ -208,5 +218,24 @@ public:
 
     [[nodiscard]] unsigned int getRailTextureID() const { return railTextureID; }
     [[nodiscard]] unsigned int getStationTextureID() const { return stationTextureID; }
+
+
+
+    // Добавьте эти методы в публичную секцию RailroadMap
+    size_t getRouteCount() const { return routes.size(); }
+    // const CatmullRomSpline& getRoute(int index) const {
+    //     if (index < 0 || index >= routes.size()) {
+    //         throw std::out_of_range("Route index out of range");
+    //     }
+    //     return routes[index];
+    //     }
+    const CatmullRomSpline& RailroadMap::getRoute(int index) const {
+        if (index < 0 || index >= static_cast<int>(routes.size())) {
+            std::cout << "ERROR: Route index " << index << " out of range (0-" << routes.size()-1 << ")" << std::endl;
+            throw std::out_of_range("Route index out of range");
+        }
+        return routes[index];
+    }
+
 };
 #endif // RAILROAD_MAP_H
