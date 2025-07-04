@@ -1,5 +1,11 @@
 Simulation of the public transport service written in the C++ using openGL for the university project.
 
+![main menu](img/menu.png)
+## 3D models and GUI
+![train](img/train.png)   
+## dynamic railroads and tunnels generation
+![tunnel](img/tunnel.png)
+
 # Installation
 
 
