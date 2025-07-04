@@ -65,21 +65,6 @@ inline float cube_vertices_pnt[] = {
 
 
 
-class BezierCurve {
-    glm::vec3 p0, p1, p2;  // Изменено на vec3
-
-public:
-    BezierCurve(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2)
-        : p0(p0), p1(p1), p2(p2) {}
-
-    glm::vec3 getPoint(float t) const {
-        return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
-    }
-
-    glm::vec3 getDirection(float t) const {
-        return 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1);
-    }
-};
 
 class CatmullRomSpline {
 private:
@@ -172,6 +157,13 @@ class RailroadMap {
     LabelDisplayMode labelDisplayMode = LabelDisplayMode::STATIC;
 
 
+    bool useSimpleAnimation = false;
+    std::vector<glm::vec3> routeColors;
+    std::unique_ptr<Mesh> simpleLinesMesh;
+    void createSimpleLinesMesh();
+    void generateRouteColors();
+
+
     int railVerticesCount{}, stationVerticesCount{};
     unsigned int railTextureID = 0, stationTextureID = 0;
     unsigned int boxDiffuseTextureID = 0, boxSpecularTextureID = 0;
@@ -193,6 +185,11 @@ class RailroadMap {
     void generateXTunnel(const IntersectionPoint& intersection);
     bool areRoutesIntersecting(size_t route1, size_t route2, glm::vec3& intersectionPoint);
     bool showTunnels = false; // Флаг для отображения туннелей
+
+    std::vector<float> trainPositions; // Позиции "поездов" для каждого маршрута
+    glm::vec3 getPositionOnRoute(size_t routeIndex, float progress) const;
+    std::vector<std::vector<glm::vec3>> completedPaths; // Завершенные пути для каждого маршрута
+    std::vector<bool> routeCompleted; // Флаги завершения маршрутов
 
 
     void createRailsMesh();
@@ -270,6 +267,10 @@ public:
         return routes[index];
     }
     void clear();
+    void setUseSimpleAnimation(bool useSimple) { useSimpleAnimation = useSimple; }
+    bool getUseSimpleAnimation() const { return useSimpleAnimation; }
+    void drawSimpleLines(const Shader& shader);
+    void updateTrainPositions(float deltaTime);
 };
 
 

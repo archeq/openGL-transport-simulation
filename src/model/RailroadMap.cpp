@@ -100,6 +100,9 @@ void RailroadMap::initialize(const std::vector<glm::vec3>& points, const std::ve
     std::cout << "Total routes created: " << routes.size() << std::endl;
     std::cout << "Total unique stations: " << stations.size() << std::endl;
 
+    // Генерируем цвета для маршрутов
+    generateRouteColors();
+
     createRailsMesh();
     createStationsMesh();
 }
@@ -552,9 +555,15 @@ void RailroadMap::draw(const Shader &shader, const Camera &camera, const LightSo
     shader.setFloat("material.shininess", 32.0f);
     shader.setInt("material.diffuse", 0);
 
-    draw_rails(shader);
+    if (useSimpleAnimation) {
+        // Упрощенная анимация - цветные линии
+        drawSimpleLines(shader);
+    } else {
+        // Обычная анимация - рельсы
+        draw_rails(shader);
+    }
+
     draw_station_spheres(shader);
-    
 }
 
 void RailroadMap::setStationNames(const std::vector<std::string>& names) {
@@ -795,4 +804,204 @@ void RailroadMap::clear() {
     boxTexturesLoaded = false;
 
     std::cout << "RailroadMap cleared" << std::endl;
+}
+
+void RailroadMap::generateRouteColors() {
+    routeColors.clear();
+
+    // Предопределенные цвета для маршрутов
+    std::vector<glm::vec3> predefinedColors = {
+        glm::vec3(1.0f, 0.0f, 0.0f), // Красный
+        glm::vec3(0.0f, 1.0f, 0.0f), // Зеленый
+        glm::vec3(0.0f, 0.0f, 1.0f), // Синий
+        glm::vec3(1.0f, 1.0f, 0.0f), // Желтый
+        glm::vec3(1.0f, 0.0f, 1.0f), // Пурпурный
+        glm::vec3(0.0f, 1.0f, 1.0f), // Циан
+        glm::vec3(1.0f, 0.5f, 0.0f), // Оранжевый
+        glm::vec3(0.5f, 0.0f, 1.0f), // Фиолетовый
+        glm::vec3(0.0f, 0.5f, 0.0f), // Темно-зеленый
+        glm::vec3(0.5f, 0.5f, 0.5f)  // Серый
+    };
+
+    for (size_t i = 0; i < routes.size(); ++i) {
+        if (i < predefinedColors.size()) {
+            routeColors.push_back(predefinedColors[i]);
+        } else {
+            // Генерируем случайный цвет для дополнительных маршрутов
+            float r = (float)(rand() % 256) / 255.0f;
+            float g = (float)(rand() % 256) / 255.0f;
+            float b = (float)(rand() % 256) / 255.0f;
+            routeColors.push_back(glm::vec3(r, g, b));
+        }
+    }
+}
+
+void RailroadMap::createSimpleLinesMesh() {
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    // Для каждого маршрута создаем линию
+    for (size_t routeIdx = 0; routeIdx < routes.size(); ++routeIdx) {
+        const auto& route = routes[routeIdx];
+
+        // Для каждого сегмента сплайна
+        for (int segment = 0; segment < route.getSegmentCount(); ++segment) {
+            const int steps = 50;
+            for (int i = 0; i < steps; ++i) {
+                float t = i / (float)steps;
+                glm::vec3 pos = route.getPoint(segment, t);
+                pos.y += 0.02f; // Поднимаем чуть выше земли
+
+                Vertex vertex;
+                vertex.Position = pos;
+                vertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+                vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+
+                vertices.push_back(vertex);
+
+                // Добавляем индекс для отрисовки линии
+                if (i > 0) {
+                    indices.push_back(vertices.size() - 2);
+                    indices.push_back(vertices.size() - 1);
+                }
+            }
+        }
+    }
+
+    std::vector<Texture> textures;
+    simpleLinesMesh = std::make_unique<Mesh>(vertices, indices, textures);
+}
+
+void RailroadMap::drawSimpleLines(const Shader& shader) {
+    shader.use();
+    shader.setBool("use_texture", false);
+    glLineWidth(4.0f);
+
+    // Для каждого маршрута рисуем растущую цветную линию
+    for (size_t routeIdx = 0; routeIdx < routes.size(); ++routeIdx) {
+        const auto& route = routes[routeIdx];
+
+        // Устанавливаем цвет маршрута
+        if (routeIdx < routeColors.size()) {
+            shader.setVec3("material.diffuse_color", routeColors[routeIdx]);
+        } else {
+            shader.setVec3("material.diffuse_color", glm::vec3(1.0f, 1.0f, 1.0f));
+        }
+
+        // Получаем текущий прогресс "поезда" для этого маршрута
+        float trainProgress = 0.0f;
+        if (routeIdx < trainPositions.size()) {
+            trainProgress = trainPositions[routeIdx];
+        }
+
+        // Создаем вертексы для растущей линии от начала до текущей позиции
+        std::vector<Vertex> lineVertices;
+        std::vector<unsigned int> lineIndices;
+
+        // Количество сегментов для отрисовки (зависит от прогресса)
+        int totalSegments = 50;
+        int currentSegments = static_cast<int>(trainProgress * totalSegments);
+
+        // Рисуем линию от начала (0.0) до текущей позиции
+        for (int i = 0; i <= currentSegments; ++i) {
+            float t = static_cast<float>(i) / totalSegments;
+
+            // Получаем позицию точки на маршруте
+            glm::vec3 pos = getPositionOnRoute(routeIdx, t);
+            pos.y += 0.05f; // Поднимаем над землей
+
+            Vertex vertex;
+            vertex.Position = pos;
+            vertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.Tangent = glm::vec3(0.0f);
+            vertex.Bitangent = glm::vec3(0.0f);
+            lineVertices.push_back(vertex);
+
+            // Создаем индексы для соединения точек
+            if (i > 0) {
+                lineIndices.push_back(i - 1);
+                lineIndices.push_back(i);
+            }
+        }
+
+        // Создаем и рисуем линию
+        if (!lineVertices.empty() && !lineIndices.empty()) {
+            unsigned int VAO, VBO, EBO;
+            glGenVertexArrays(1, &VAO);
+            glGenBuffers(1, &VBO);
+            glGenBuffers(1, &EBO);
+
+            glBindVertexArray(VAO);
+
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, lineVertices.size() * sizeof(Vertex), &lineVertices[0], GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, lineIndices.size() * sizeof(unsigned int), &lineIndices[0], GL_STATIC_DRAW);
+
+            // Настраиваем атрибуты вершин
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+
+            // Рисуем линию
+            glDrawElements(GL_LINES, lineIndices.size(), GL_UNSIGNED_INT, 0);
+
+            // Очищаем буферы
+            glDeleteVertexArrays(1, &VAO);
+            glDeleteBuffers(1, &VBO);
+            glDeleteBuffers(1, &EBO);
+        }
+    }
+
+    glLineWidth(1.0f);
+}
+
+glm::vec3 RailroadMap::getPositionOnRoute(size_t routeIndex, float progress) const {
+    if (routeIndex >= routes.size()) return glm::vec3(0.0f);
+
+    const auto& route = routes[routeIndex];
+
+    // Нормализуем прогресс (0.0 - 1.0)
+    while (progress < 0.0f) progress += 1.0f;
+    while (progress > 1.0f) progress -= 1.0f;
+
+    // Вычисляем позицию на сплайне
+    float totalSegments = route.getSegmentCount();
+    float segmentProgress = progress * totalSegments;
+
+    int segment = (int)segmentProgress;
+    float t = segmentProgress - segment;
+
+    if (segment >= route.getSegmentCount()) {
+        segment = route.getSegmentCount() - 1;
+        t = 1.0f;
+    }
+
+    return route.getPoint(segment, t);
+}
+
+void RailroadMap::updateTrainPositions(float deltaTime) {
+    float speed = 0.15f; // Скорость движения
+
+    // Инициализируем позиции если нужно
+    if (trainPositions.size() != routes.size()) {
+        trainPositions.resize(routes.size(), 0.0f);
+    }
+
+    // Обновляем позицию каждого "поезда"
+    for (size_t i = 0; i < trainPositions.size(); ++i) {
+        trainPositions[i] += speed * deltaTime;
+
+        // Когда поезд достигает конца маршрута, сбрасываем позицию
+        if (trainPositions[i] >= 1.0f) {
+            trainPositions[i] = 0.0f; // Начинаем заново
+        }
+    }
 }

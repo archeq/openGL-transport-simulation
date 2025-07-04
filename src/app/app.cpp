@@ -124,6 +124,7 @@ unsigned int groundVAO, groundVBO;
 
 size_t selectedTrainIndex = 0;
 bool freeCameraMode = false;
+bool useSimpleAnimation = false;
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     if (camera.mode == FOLLOW) {
@@ -243,6 +244,8 @@ void loadSelectedCity(GLFWwindow* window) {
     railroadMap.loadStationBoxTextures("../textures/container.png", "../textures/container2_specular.png");
     railroadMap.setStationNames(city.stationNames);
 
+    railroadMap.setUseSimpleAnimation(useSimpleAnimation);
+
     std::cout << "Loaded city: " << city.name << std::endl;
     std::cout << "Routes created: " << railroadMap.getRouteCount() << std::endl;
 
@@ -250,11 +253,13 @@ void loadSelectedCity(GLFWwindow* window) {
     trainManager.~TrainManager(); // Явно вызываем деструктор
     new (&trainManager) TrainManager(railroadMap); // Placement new для пересоздания объекта
 
-    // Добавляем поезда для каждого маршрута (если есть)
-    size_t routeCount = railroadMap.getRouteCount();
-    for (size_t i = 0; i < routeCount; ++i) {
-        trainManager.addTrain(trainModelPtr, i, 25.0f);
-        std::cout << "Added train for route " << i << std::endl;
+    // Добавляем поезда только если не используется упрощенный режим
+    if (!useSimpleAnimation) {
+        size_t routeCount = railroadMap.getRouteCount();
+        for (size_t i = 0; i < routeCount; ++i) {
+            trainManager.addTrain(trainModelPtr, i, 25.0f);
+            std::cout << "Added train for route " << i << std::endl;
+        }
     }
 
     citySelected = true;
@@ -367,6 +372,15 @@ void test_setup(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    // Загружаем шрифты разных размеров
+    io.Fonts->AddFontDefault(); // Стандартный шрифт (индекс 0)
+
+    // Добавляем большой шрифт
+    ImFontConfig config;
+    config.SizePixels = 24.0f;
+    io.Fonts->AddFontDefault(&config); // Большой шрифт (индекс 1)
+
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
@@ -537,32 +551,93 @@ void render(GLFWwindow *window) {
         // Центрируем окно
         ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH * 0.5f, WINDOW_HEIGHT * 0.5f),
                                ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        ImGui::SetNextWindowSize(ImVec2(400, 300));
+        ImGui::SetNextWindowSize(ImVec2(500, 400));
 
         if (ImGui::Begin("Main Menu", nullptr,
                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                         ImGuiWindowFlags_NoCollapse)) {
-            ImGui::Text("Welcome to Metro Systems Simulator");
+
+
+            float windowWidth = ImGui::GetWindowSize().x;
+
+            // Центрируем заголовок
+            ImGui::Spacing();
+            ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]); // Используем второй шрифт (большой)
+            const char* title = "Welcome to Metro Systems Simulator";
+            float titleWidth = ImGui::CalcTextSize(title).x;
+            ImGui::SetCursorPosX((windowWidth - titleWidth) * 0.5f);
+            ImGui::Text(title);
+            ImGui::PopFont();
+
+            ImGui::Spacing();
             ImGui::Separator();
-            ImGui::Text("Please, choose a city to explore:");
+            ImGui::Spacing();
+
+            // Центрируем подзаголовок
+            const char* subtitle = "Please, choose a city to explore:";
+            float subtitleWidth = ImGui::CalcTextSize(subtitle).x;
+            ImGui::SetCursorPosX((windowWidth - subtitleWidth) * 0.5f);
+            ImGui::Text(subtitle);
+
+            ImGui::Spacing();
             ImGui::Separator();
+            ImGui::Spacing();
+
+            // Центрируем чекбокс
+
+            const char* checkboxText = "Simplified (lines instead of rails)";
+            float checkboxWidth = ImGui::CalcTextSize(checkboxText).x + 20.0f; // +20 для самого чекбокса
+            ImGui::SetCursorPosX((windowWidth - checkboxWidth) * 0.5f);
+
+            if (ImGui::Checkbox("Simplified", &useSimpleAnimation)) {
+                if (citySelected) {  // Добавьте эту проверку
+
+                    railroadMap.setUseSimpleAnimation(useSimpleAnimation);
+                }
+            }
+            ImGui::SameLine();
+            ImGui::Text("(lines instead of rails)");
+
+
+            ImGui::Spacing();
+            ImGui::Spacing();
+
+            // Увеличиваем размер радиокнопок для городов
 
             for (size_t i = 0; i < cities.size(); ++i) {
+                float cityWidth = ImGui::CalcTextSize(cities[i].name.c_str()).x + 20.0f; // +20 для радиокнопки
+
                 if (ImGui::RadioButton(cities[i].name.c_str(), selectedCityIndex == i)) {
                     selectedCityIndex = i;
                 }
                 ImGui::Spacing();
             }
 
-            ImGui::Separator();
 
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+
+            // Центрируем кнопку Start
+            float buttonWidth = 380.0f;
+            ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
             if (ImGui::Button("Start Simulation", ImVec2(380, 40))) {
                 loadSelectedCity(window);
             }
+            ImGui::Spacing();
         }
         ImGui::End();
     } else {
         // Обычная отрисовка сцены
+        if (useSimpleAnimation) {
+            railroadMap.setShowTunnels(false);
+            railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
+            camera.position = lightSource.position + glm::vec3(0.0f, -20.0f, 0.0f);
+            camera.mode = FREE;
+        }
+
         skybox.draw(camera);
         draw_ground(camera, lightSource);
         lightSource.draw_as_cube(camera, 3);
@@ -577,78 +652,90 @@ void render(GLFWwindow *window) {
         simpleShader.setVec3("light.diffuse", lightSource.diffuse);
         simpleShader.setVec3("light.specular", lightSource.specular);
 
-        bool transparentTunnels = freeCameraMode;
-        railroadMap.drawTunnels(simpleShader, transparentTunnels);
-        trainManager.draw(modelShader, camera, lightSource);
-        draw_stones(simpleShader, camera, lightSource);
+        // Отрисовываем поезда только если не упрощенный режим
+        // Отрисовываем туннели только если не упрощенный режим
+        if (!useSimpleAnimation) {
+            bool transparentTunnels = freeCameraMode;
+            railroadMap.drawTunnels(simpleShader, transparentTunnels);
+            trainManager.draw(modelShader, camera, lightSource);
+            draw_stones(simpleShader, camera, lightSource);
+        }
+
+
         railroadMap.draw(simpleShader, camera, lightSource);
         railroadMap.drawStationLabels(camera, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         // Панель управления (существующий код)
-        if (ImGui::Begin("Camera Control")) {
-            ImGui::Text("Update core");
-            if (ImGui::Button("Pause/Unpause")) {
+        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Game Menu")) {
+            if (ImGui::Button("Back to Main Menu")) {
+                showMainMenu = true;
+                citySelected = false;
+                pauseUpdate = true;
+            }
+            ImGui::Separator();
+            if (ImGui::Button("Pause/Unpause", ImVec2(200, 30))) {
                 pauseUpdate = !pauseUpdate;
                 cursor_visible = pauseUpdate;
                 glfwSetInputMode(window, GLFW_CURSOR, cursor_visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
             }
 
-            ImGui::Text("Label Display Mode");
-
-            if (ImGui::RadioButton("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC && railroadMap.showStationLabels)) {
-                railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
-                railroadMap.showStationLabels = true;
-            }
-
-            if (ImGui::RadioButton("Dynamic", railroadMap.getLabelDisplayMode() == LabelDisplayMode::DYNAMIC && railroadMap.showStationLabels)) {
-                railroadMap.setLabelDisplayMode(LabelDisplayMode::DYNAMIC);
-                railroadMap.showStationLabels = true;
-            }
-
-            if (ImGui::RadioButton("Off", !railroadMap.showStationLabels)) {
-                railroadMap.showStationLabels = false;
-            }
-
-            ImGui::Separator();
-
-            // Добавляем контроль туннелей
-            bool showTunnels = railroadMap.getShowTunnels();
-            if (ImGui::Checkbox("Show Tunnels", &showTunnels)) {
-                railroadMap.setShowTunnels(showTunnels);
-            }
-
-            ImGui::Separator();
-            ImGui::Text("Camera Mode");
-
-            if (ImGui::RadioButton("Free Camera", freeCameraMode)) {
-                freeCameraMode = true;
-                camera.mode = FREE;
-            }
-
-            if (ImGui::RadioButton("Follow Train", !freeCameraMode)) {
-                freeCameraMode = false;
-                camera.mode = FOLLOW;
-            }
-
-            if (!freeCameraMode) {
-                ImGui::Text("Select Train to Follow:");
-                size_t trainCount = trainManager.getTrainCount();
-                for (size_t i = 0; i < trainCount; i++) {
-                    std::string trainLabel = "Train " + std::to_string(i + 1);
-                    if (ImGui::RadioButton(trainLabel.c_str(), selectedTrainIndex == i)) {
-                        selectedTrainIndex = i;
-                    }
-                }
-            }
-            ImGui::Separator();
-            if (ImGui::Button("Back to Main Menu", ImVec2(200, 30))) {
-                showMainMenu = true;
-                citySelected = false;
-                pauseUpdate = true;
-            }
-
         }
         ImGui::End();
+        if (!useSimpleAnimation) {
+            ImGui::SetNextWindowPos(ImVec2(WINDOW_WIDTH - 300, 10), ImGuiCond_FirstUseEver);
+            if (ImGui::Begin("Camera Control")) {
+                ImGui::Text("Update core");
+                    ImGui::Text("Label Display Mode");
+
+                    if (ImGui::RadioButton("Static", railroadMap.getLabelDisplayMode() == LabelDisplayMode::STATIC && railroadMap.showStationLabels)) {
+                        railroadMap.setLabelDisplayMode(LabelDisplayMode::STATIC);
+                        railroadMap.showStationLabels = true;
+                    }
+
+                    if (ImGui::RadioButton("Dynamic", railroadMap.getLabelDisplayMode() == LabelDisplayMode::DYNAMIC && railroadMap.showStationLabels)) {
+                        railroadMap.setLabelDisplayMode(LabelDisplayMode::DYNAMIC);
+                        railroadMap.showStationLabels = true;
+                    }
+
+                    if (ImGui::RadioButton("Off", !railroadMap.showStationLabels)) {
+                        railroadMap.showStationLabels = false;
+                    }
+
+                    ImGui::Separator();
+
+                    // Добавляем контроль туннелей
+                    bool showTunnels = railroadMap.getShowTunnels();
+                    if (ImGui::Checkbox("Show Tunnels", &showTunnels)) {
+                        railroadMap.setShowTunnels(showTunnels);
+                    }
+
+                    ImGui::Separator();
+                    ImGui::Text("Camera Mode");
+
+                    if (ImGui::RadioButton("Free Camera", freeCameraMode)) {
+                        freeCameraMode = true;
+                        camera.mode = FREE;
+                    }
+
+                    if (ImGui::RadioButton("Follow Train", !freeCameraMode)) {
+                        freeCameraMode = false;
+                        camera.mode = FOLLOW;
+                    }
+
+                    if (!freeCameraMode) {
+                        ImGui::Text("Select Train to Follow:");
+                        size_t trainCount = trainManager.getTrainCount();
+                        for (size_t i = 0; i < trainCount; i++) {
+                            std::string trainLabel = "Train " + std::to_string(i + 1);
+                            if (ImGui::RadioButton(trainLabel.c_str(), selectedTrainIndex == i)) {
+                                selectedTrainIndex = i;
+                            }
+                        }
+                }
+            }
+            ImGui::End();
+        }
     }
 
     ImGui::Render();
@@ -672,7 +759,7 @@ void App::loop() {
 
         // Обновляем камеру и поезда только если город выбран
         if (citySelected && !showMainMenu) {
-            if (!freeCameraMode && camera.mode == FOLLOW) {
+            if (!freeCameraMode && camera.mode == FOLLOW && !useSimpleAnimation) {
                 if (static_cast<size_t>(selectedTrainIndex) < trainManager.getTrainCount()) {
                     glm::vec3 target = trainManager.getTrain(selectedTrainIndex)->getPosition();
                     camera.target_position = target;
@@ -680,8 +767,13 @@ void App::loop() {
             }
             camera.update();
 
-            if (!pauseUpdate)
-                trainManager.update(deltaTime_s);
+            if (!pauseUpdate) {
+                // Обновляем поезда только если не упрощенный режим
+                if (!useSimpleAnimation) {
+                    trainManager.update(deltaTime_s);
+                }
+                railroadMap.updateTrainPositions(deltaTime_s);
+            }
         }
 
         // rendering
