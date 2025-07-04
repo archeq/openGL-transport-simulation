@@ -400,8 +400,8 @@ void test_setup(GLFWwindow* window) {
 
     // ЗАТЕМ создаем модель поезда
     // TODO: TRAIN MODEL LOAD
-    // trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
-    trainModelPtr = std::make_shared<Model>("../models/train_minimalistic/mini_train.obj");
+    trainModelPtr = std::make_shared<Model>("../models/train/Intercity 125 Executive Livery With Buffers.obj");
+    // trainModelPtr = std::make_shared<Model>("../models/train_minimalistic/mini_train.obj");
     if (!trainModelPtr->is_loaded()) {
         std::cout << "ERROR:: Train model failed to load!" << std::endl;
     } else {
